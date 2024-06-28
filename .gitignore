@@ -1,0 +1,35 @@
+# Python
+__pycache__
+*.pyc
+*.egg-info
+dist
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Editor
+.idea
+*.swp
+
+# Other
+.DS_Store
+
+# DevContainer
+!.devcontainer/*
+
+# Demo
+serve_images/
+
+
+wandb/
+logs/
+results/
