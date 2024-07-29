@@ -25,8 +25,10 @@ Datasets (put under data folder):
 bash scripts/run_clip_name.sh
 ```
 This will generate the forgetting gradient file stored at ...
+
 3. Perform the _Single Layer Single Gradient_ update by running
 ```setup
 bash scripts/run.sh
 ```
+
 4. 
