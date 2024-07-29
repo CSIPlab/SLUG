@@ -22,10 +22,11 @@ Datasets (put under data folder):
 
 2. Calculate the gradient from the forget and retain sets by running
 ```setup
-bash run_clip_name.sh
+bash scripts/run_clip_name.sh
 ```
-3. Perform one-step unlearning update by running
+This will generate the forgetting gradient file stored at ...
+3. Perform the _Single Layer Single Gradient_ update by running
 ```setup
-bash run.sh
+bash scripts/run.sh
 ```
 4. 
