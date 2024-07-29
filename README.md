@@ -18,5 +18,14 @@ Datasets (put under data folder):
 
 ## Unlearning procedure
 
-1. prepare forget and retain set. Given an unlearning task, we first curate a forget set containing relevant image-text pairs, then select a retain set.
-2. 
+1. Prepare a forget and a retain set. Given an unlearning task, we first curate a forget set containing relevant image-text pairs, then select a retain set.
+
+2. Calculate the gradient from the forget and retain sets by running
+```setup
+bash run_clip_name.sh
+```
+3. Perform one-step unlearning update by running
+```setup
+bash run.sh
+```
+4. 
