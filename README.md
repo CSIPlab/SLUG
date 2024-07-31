@@ -15,6 +15,7 @@ Datasets (put under data folder):
 - ImageNet 2012. We use the imagenet validation set to evaluate CLIP model general performance. Request access here https://www.image-net.org/download.php
 - CelebA. We sample identities in CelebA dataset to forget. The dataset is available here https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html. Request the dataset authors for the name of identities.
 
+Update `data_root` in `src/clip/a0_eval_celeba.py` to the directroy you stored the experimental data.
 
 ## Unlearning procedure
 
