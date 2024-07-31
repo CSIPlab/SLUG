@@ -1,3 +1,4 @@
+cd src
 # Jul 29: calculating the gradients for given celebrity names
 # use huggingface/transformers
 # https://huggingface.co/docs/transformers/en/model_doc/clip#transformers.CLIPModel

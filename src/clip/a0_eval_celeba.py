@@ -76,7 +76,7 @@ def run_name(model, classifier, name, preprocess, device):
 
 # sort the names in the celeba dataset according to the frequency in laion dataset
 # only consider the names longer than 8 characters
-file_path = "/home/eegrad/zcai/unlearn/muwa/data/frequent_celebs.txt"
+file_path = "../data/frequent_celebs.txt"
 # Initialize an empty list to store the names
 frequent_celebs = []
 # Open the file in read mode and read the names
