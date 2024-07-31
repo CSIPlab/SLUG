@@ -1,3 +1,4 @@
+cd src
 # Jul 29: perform model update after calculating the gradients
 # evaluate mia
 # python 5_mia_imagenet.py --dataset imagenet --dataroot /data/SalmanAsif/ImageNet --model resnet18 --retain_ratio 0.1 --batch-size 128 --unlearn_method pretrain
