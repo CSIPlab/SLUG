@@ -59,9 +59,11 @@ bash scripts/run.sh
 ```
 
 ### Unlearning other celebrity name / object concept
+1. Create the forget set dataset file
 ```setup
 python src/clip/a0_create_tar.py --name [celebrity name/object concept]
 ```
+2. Repeat the unlearning procedure
 TODO: include experiment steps for unlearning object/multiple identities
 
 ### Unlearning experiment on Stable diffusion
