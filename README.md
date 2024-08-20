@@ -32,7 +32,7 @@ This will generate the forgetting gradient file stored at ...
 bash scripts/run.sh
 ```
 
-4. 
+4. TODO: include experiment steps for unlearning object/multiple identities
 
 ## Unlearning experiment on Stable diffusion
 Before start, generate necessary dataset files and gradient files following steps described in _Unlearning procedure_.
