@@ -24,11 +24,16 @@ The `data` folder is structured as:
 data
 ├── celeba
 │   ├── img_align_celeba
-│   │   └── ....jpg
+│   │   ├── 010905.jpg
+│   │   ├── 010906.jpg
+│   │   └── ...
 │   └── list_identity_celeba.txt
 ├── ImageNet
 │   └── val
 │       ├── n01440764
+│       │   ├── ILSVRC2012_val_00000293.JPEG
+│       │   ├── ILSVRC2012_val_00002138.JPEG
+│       │   └── ...
 │       ├── n01443537
 │       └── ...
 └── laion
