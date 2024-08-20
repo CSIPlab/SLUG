@@ -58,15 +58,19 @@ This will generate the forgetting gradient file stored at ...
 bash scripts/run.sh
 ```
 
-4. TODO: include experiment steps for unlearning object/multiple identities
+### Unlearning other celebrity name / object concept
+```setup
+python src/clip/a0_create_tar.py --name [celebrity name/object concept]
+```
+TODO: include experiment steps for unlearning object/multiple identities
 
-## Unlearning experiment on Stable diffusion
+### Unlearning experiment on Stable diffusion
 Before start, generate necessary dataset files and gradient files following steps described in _Unlearning procedure_.
 Run Jupyter notebook `notebooks/experiment_stable_diffusion.ipynb`
 
-## Unlearning experiment on Vision-language models
+### Unlearning experiment on Vision-language models
 Before start, generate necessary dataset files and gradient files following steps described in _Unlearning procedure_.
 Run Jupyter notebook `notebooks/experiment_vision_language.ipynb`
 
-## Pre-trained gradient files
+### Pre-trained gradient files
 TODO: upload gradient files to a google drive for fast reproducibility verifications.
