@@ -63,6 +63,9 @@ bash scripts/run.sh
 ```setup
 python src/clip/a0_create_tar.py --name [celebrity name/object concept]
 ```
+This will create a directory with selected images that are associated with provided celebrity name/concept from laion shard file, under `data/laion/laion400m`.
+And a `.tar` file containing the selected images, under `data/tar_files/{concept_name}.tar`.
+
 2. Repeat the unlearning procedure
 TODO: include experiment steps for unlearning object/multiple identities
 
