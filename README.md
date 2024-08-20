@@ -41,3 +41,6 @@ Run Jupyter notebook `notebooks/experiment_stable_diffusion.ipynb`
 ## Unlearning experiment on Vision-language models
 Before start, generate necessary dataset files and gradient files following steps described in _Unlearning procedure_.
 Run Jupyter notebook `notebooks/experiment_vision_language.ipynb`
+
+## Experimental gradient files (pre-trained)
+TODO: upload gradient files to a google drive for fast reproducibility verifications.
