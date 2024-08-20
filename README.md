@@ -1,4 +1,4 @@
-# 🐛SLUG: <u>S</u>ingle <u>L</u>ayer <u>U</u>nlearning <u>G</u>radient for effective information removel
+# 🐛SLUG: Single Layer Unlearning Gradient for effective information removel
 
 ## Requirements
 
