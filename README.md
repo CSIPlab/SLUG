@@ -78,5 +78,5 @@ Run Jupyter notebook `notebooks/experiment_stable_diffusion.ipynb`
 Before start, generate necessary dataset files and gradient files following steps described in _Unlearning procedure_.
 Run Jupyter notebook `notebooks/experiment_vision_language.ipynb`
 
-### Pre-trained gradient files
-TODO: upload gradient files to a google drive for fast reproducibility verifications.
+### Pre-trained gradient files and dataset .tar files
+TODO: upload gradient files to a google drive for fast reproducibility verifications. [Google Drive](https://drive.google.com/drive/folders/1K8DCnw3B56hUcxF-8SYWYo-AY1uLAWC1?usp=sharing)
