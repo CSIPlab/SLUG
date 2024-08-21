@@ -47,7 +47,9 @@ data
 
 1. Prepare a forget and a retain set. Given an unlearning task, we first curate a forget set containing relevant image-text pairs, then select a retain set.
 
-2. Calculate the gradient from the forget and retain sets by running
+2. Calculate the gradient from the forget and retain sets.
+
+   Update the route for arguments `--train-data`, `--forget-data`, and `--imagenet-val` in `scripts/run_clip_name.sh`, then run
 ```setup
 bash scripts/run_clip_name.sh
 ```
