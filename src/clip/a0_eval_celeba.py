@@ -14,7 +14,9 @@ import random
 from pathlib import Path
 from collections import defaultdict
 from tqdm import tqdm
-data_root = Path("/data/SalmanAsif/celeba")
+
+data_root = Path("/home/yt/Lab/unlearning/muwa/data/celeba")
+
 file_image_name = data_root / "list_identity_celeba.txt"
 with open(file_image_name, 'r') as f:
     # Read the file line by line

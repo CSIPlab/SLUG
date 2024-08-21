@@ -81,8 +81,8 @@ unlearn="calc_grad"
 # Define the list of model-pretrained pairs
 pairs=(
   "ViT-B-32 laion400m_e32"
-  "ViT-B-16 laion400m_e32"
-  "convnext_base laion400m_s13b_b51k"
+  # "ViT-B-16 laion400m_e32"
+  # "convnext_base laion400m_s13b_b51k"
   # "ViT-L-14 laion400m_e32"
   # "EVA01-g-14 laion400m_s11b_b41k"
 )
@@ -111,7 +111,7 @@ for pair in "${pairs[@]}"; do
   exe="python"
   # exe="torchrun --nproc_per_node=2"
 
-  shards="00001"
+  shards="00000"
   # shards="{00001..00005}"
   # shards="{00001..00010}"
   # shards="{00001..00020}"
@@ -153,10 +153,10 @@ for pair in "${pairs[@]}"; do
     $exe -m clip.$script \
         --save-frequency 1 \
         --zeroshot-frequency 1 \
-        --train-data="/data/SalmanAsif/laion/laion400m/${shards}.tar"  \
-        --forget-data="./data/laion/forget/names/${celeb_name}.tar" \
+        --train-data="/home/yt/Lab/unlearning/muwa/data/laion/laion400m/${shards}.tar"  \
+        --forget-data="./data/tar_files/${celeb_name}.tar" \
         --celeb-name=$celeb_name \
-        --imagenet-val='/data/SalmanAsif/ImageNet/val' \
+        --imagenet-val='/home/yt/Lab/unlearning/muwa/data/ImageNet/val' \
         --warmup 0 \
         --batch-size=16 \
         --lr=1e-5 \
