@@ -53,7 +53,7 @@ data
 ```setup
 bash scripts/run_clip_name.sh
 ```
-This will generate the forgetting gradient file stored at ...
+This will generate the forgetting gradient file stored at `muwa/src/results/grads`.
 
 3. Perform the _Single Layer Single Gradient_ update by running
 ```setup
