@@ -12,7 +12,7 @@ conda env create -f environment.yml
 ### Datasets (put under data folder):
 - laion-400M, the training set of CLIP model, from which we sample foget set and retain set. First download the parquet files, and then use img2dataset to download the images. Use the following code https://github.com/rom1504/img2dataset/blob/main/dataset_examples/laion400m.md. The image-text pairs are stored in tar files such as 00000.tar, 00001.tar and so on. 
 - ImageNet 2012. We use the imagenet validation set to evaluate CLIP model general performance. Request access here https://www.image-net.org/download.php
-- CelebA. We sample identities in CelebA dataset to forget. The dataset is available here https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html, or through [Google Drive](https://drive.usercontent.google.com/download?id=0B7EVK8r0v71pZjFTYXZWM3FlRnM&authuser=0). Request the dataset authors for the name of identities.
+- CelebA. We sample identities in CelebA dataset to forget. The dataset is available here https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html, or through this [Google Drive](https://drive.usercontent.google.com/download?id=0B7EVK8r0v71pZjFTYXZWM3FlRnM&authuser=0). Request the dataset authors for the name of identities.
 
 Update `data_root` in `src/clip/a0_eval_celeba.py` to the directroy you stored the experimental data.
 
