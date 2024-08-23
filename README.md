@@ -1,15 +1,27 @@
 # 🐛SLUG: Single Layer Unlearning Gradient for effective information removel
 
-## Overview
+### [Preprint](https://arxiv.org/abs/2407.11867) | [Code](https://github.com/CSIPlab/slug)
 
-This is the official code repository of paper [Single Layer Single Gradient Unlearning](https://arxiv.org/abs/2407.11867).
+This is the official code repository of *Unlearning Targeted Information via Targeted Single Layer Unlearning Gradient*.
 
-### Abstract
-Machine unlearning methods seek to revise pretrained models such that effects of certain training samples can be removed. In addition to effective erasure, low computational cost and general utility retention are also highly desirable. Existing unlearning methods usually involve iterative updates over the model parameters, which incurs a high computational cost. In this work, we propose an efficient method that only requires a one-time gradient computation, with which we modify only a single layer of model parameters. Specifically, we first identify a small number of model layers that lie on the Pareto front of high forget importance and low retain influence as critical layers. Then we search for a suitable step size and take a step along the gradient direction of a single critical layer while keeping other layers frozen. This method is highly modular and can be used to unlearn multiple concepts simultaneously in a controllable manner. We demonstrate the effectiveness and efficiency of this method on various models including CLIP, stable diffusion, and VLMs, surpassing other state-of-the-art methods.
+ [Zikui Cai](https://zikuicai.github.io/), [Yaoteng Tan](https://ytengtan.github.io/), [M. Salman Asif](https://intra.ece.ucr.edu/~sasif/)<br>
+ UC Riverside 
+ 
 
-### SLUG framework
+## Abstract
+Unauthorized privacy-related and copyrighted content generation using generative-AI has becoming a significant concern for human society, raising ethical, legal, and privacy issues that demand urgent attention. The EU's General Data Protection Regulation (GDPR) include a ``right to be forgotten,'' which allows individuals to request the deletion of their personal data. However, this primarily applies to data stored in traditional databases, not AI models.
 
-![SLUG](doc/framework.pdf)
+## SLUG framework
+
+![SLUG](doc/framework.png)
+
+Overview of our proposed Single Layer Unlearning Gradient (SLUG) framework. Given an unlearning query, such as removing an identity like Elon Musk, we first curate or generate a forget set containing relevant data and a retain set with data points we want to preserve. Using these datasets, we calculate and store the model gradients. Based on these gradients, we identify the important layers to update for unlearning. We then take a step along the forget gradients of a single layer and evaluate the model's unlearning performance. To determine a suitable step size $\lambda$, we employ a binary search. After unlearning, the specified concepts are effectively erased while retaining the model's overall utility.
+
+
+### Examples of Unlearning on Stable Diffusion
+![SD](doc/example-sd.png)
+Qualitative evaluation on unlearning copyright characters **Iron man** and **Mickey Mouse**, which can potentially used for unauthorized content generation, from the Stable Diffusion (SD). Our method precisely unlearned copyright protected concepts from SD, while the image generation quality on other concepts is highly preserved.
+
 
 ## 📋 Requirements
 
