@@ -1,4 +1,4 @@
-# 🐛SLUG: Single Layer Unlearning Gradient for effective information removel
+# 🐛SLUG: Single Layer Unlearning Gradient for Targeted Information Unlearning
 
 ### [Preprint](https://arxiv.org/abs/2407.11867) | [Code](https://github.com/CSIPlab/slug)
 
