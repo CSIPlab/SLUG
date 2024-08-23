@@ -104,7 +104,7 @@ Before start, generate necessary dataset files and gradient files following step
 Run Jupyter notebook `notebooks/experiment_vision_language.ipynb`
 
 ### Pre-trained gradient files and experimental forget sets
-We upload pre-trained gradient files and the corresponding forget set .tar files to this [Google Drive](https://drive.google.com/drive/folders/1K8DCnw3B56hUcxF-8SYWYo-AY1uLAWC1?usp=sharing).
+We upload pre-trained gradient files and the corresponding forget set `.tar` files to this [Google Drive](https://drive.google.com/drive/folders/1K8DCnw3B56hUcxF-8SYWYo-AY1uLAWC1?usp=sharing).
 
 TODO: upload gradient files to a google drive for fast reproducibility verifications.
 
