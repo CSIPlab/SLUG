@@ -110,7 +110,7 @@ First clone [UnlearnCanvas](https://github.com/OPTML-Group/UnlearnCanvas) reposi
 cd data
 git clone https://github.com/OPTML-Group/UnlearnCanvas.git
 ```
-Download UnlearnCanvas dataset and pretraind models following the instructions of UnlearnCanvas repository.
+Download UnlearnCanvas dataset and pretraind models following the instructions in the UnlearnCanvas repository.
 The UnlearnCanvas dataset folder is structured as:
 
 ```text
