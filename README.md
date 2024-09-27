@@ -76,12 +76,13 @@ data
 ```setup
 bash scripts/run_compute_grad.sh
 ```
-This will generate the forgetting gradient file stored at `muwa/src/results/grads`.
+This will generate the forgetting gradient file stored at `SLUG/results/grads`.
 
 3. Perform the _Single Layer Single Gradient_ update by running
 ```setup
 bash scripts/run_unlearn.sh
 ```
+This will generate the Pareto-front plots, consine simularity matrices, and step size searching log stored at `SLUG/results/clip`.
 
 ### Unlearning other celebrity name / object concept
 1. Create the forget set dataset file
