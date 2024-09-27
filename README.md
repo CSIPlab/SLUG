@@ -133,8 +133,10 @@ cd src/clip
 python a0_create_tar_ucanvas.py
 ```
 
-Following the same step as above (2.) to generate gradient files for each `.tar` forget set.
-Note the 
+Following similar step as above (2.) to generate gradient files for each `.tar` forget set:
+```setup
+bash scripts/run_compute_grad_uncanvas.sh
+```
 
 Lastly, run UnlearnCanvas evaluation:
 ```setup
