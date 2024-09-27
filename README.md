@@ -136,6 +136,7 @@ python a0_create_tar_ucanvas.py
 
 Following gradient computing step similar to above (Unlearning procedure 2.), to generate gradient files for forget set:
 ```setup
+cd [BACK TO SLUG/]
 bash scripts/run_compute_grad_uncanvas.sh
 ```
 
