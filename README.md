@@ -104,7 +104,7 @@ Before start, generate necessary dataset files and gradient files following step
 Run Jupyter notebook `notebooks/experiment_vision_language.ipynb`
 
 ## Evaluation on UnlearnCanvas
-First clone UnlearnCanvas repository under `./data`
+First clone [UnlearnCanvas](https://github.com/OPTML-Group/UnlearnCanvas) repository under `./data`
 ```setup
 cd data
 git clone https://github.com/OPTML-Group/UnlearnCanvas.git
