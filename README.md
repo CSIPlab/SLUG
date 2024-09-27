@@ -155,7 +155,7 @@ TODO: upload gradient files to a google drive for fast reproducibility verificat
 Please consider citing our work if you find it helpful:
 
 ```latex
-@article{cai2024single,
+@article{cai2024unlearning,
   title={Unlearning Targeted Information via Single Layer Unlearning Gradient},
   author={Cai, Zikui and Tan, Yaoteng and Asif, M Salman},
   journal={arXiv preprint arXiv:2407.11867},
