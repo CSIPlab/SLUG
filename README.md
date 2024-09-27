@@ -1,4 +1,4 @@
-# 🐛SLUG: Single Layer Unlearning Gradient for Targeted Information Unlearning
+# Unlearning Targeted Information via Single Layer Unlearning Gradient (🐛SLUG)
 
 ### [Preprint](https://arxiv.org/abs/2407.11867) | [Code](https://github.com/CSIPlab/slug)
 
@@ -156,7 +156,7 @@ Please consider citing our work if you find it helpful:
 
 ```latex
 @article{cai2024single,
-  title={Single Layer Single Gradient Unlearning},
+  title={Unlearning Targeted Information via Single Layer Unlearning Gradient},
   author={Cai, Zikui and Tan, Yaoteng and Asif, M Salman},
   journal={arXiv preprint arXiv:2407.11867},
   year={2024}
