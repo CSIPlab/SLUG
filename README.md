@@ -58,7 +58,7 @@ data
 │       │   └── ...
 │       ├── n01443537
 │       └── ...
-└── laion
+├── laion
     └── laion400m
         ├── 00000_stats.json
         ├── 00000.parquet
@@ -102,6 +102,44 @@ Run Jupyter notebook `notebooks/experiment_stable_diffusion.ipynb`
 ### Unlearning experiment on Vision-language models
 Before start, generate necessary dataset files and gradient files following steps described in _Unlearning procedure_.
 Run Jupyter notebook `notebooks/experiment_vision_language.ipynb`
+
+### Evaluation on UnlearnCanvas
+First clone UnlearnCanvas repository under `./data`
+```setup
+cd data
+git clone https://github.com/OPTML-Group/UnlearnCanvas.git
+```
+Download UnlearnCanvas dataset and pretraind models following the instructions of UnlearnCanvas repository.
+The UnlearnCanvas dataset folder is structured as:
+
+```text
+data
+└── UnlearnCanvas
+    └── data
+        ├── Abstractionism
+        │   ├── Architectures
+        │   │   ├── 1.jpg
+        │   │   ├── 2.jpg
+        │   │   └── ...
+        │   ├── Bears
+        │   ├── Birds
+        │   └── ...
+        ├── Artist_Sketch
+        └── ...
+```
+Generate `.tar` dataset files by running:
+```setup
+cd src/clip
+python a0_create_tar_ucanvas.py
+```
+
+Following the same step as above (2.) to generate gradient files for each `.tar` forget set.
+
+Lastly, run UnlearnCanvas evaluation:
+```setup
+bash scripts/run_uncanvas.sh
+```
+
 
 ### Pre-trained gradient files and experimental forget sets
 We upload pre-trained gradient files and the corresponding forget set `.tar` files to this [Google Drive](https://drive.google.com/drive/folders/1K8DCnw3B56hUcxF-8SYWYo-AY1uLAWC1?usp=sharing).
