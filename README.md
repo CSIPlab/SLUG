@@ -74,13 +74,13 @@ data
 
    Update the route for arguments `--train-data`, `--forget-data`, and `--imagenet-val` in `scripts/run_clip_name.sh`, then run
 ```setup
-bash scripts/run_clip_name.sh
+bash scripts/run_compute_grad.sh
 ```
 This will generate the forgetting gradient file stored at `muwa/src/results/grads`.
 
 3. Perform the _Single Layer Single Gradient_ update by running
 ```setup
-bash scripts/run.sh
+bash scripts/run_unlearn.sh
 ```
 
 ### Unlearning other celebrity name / object concept
@@ -103,7 +103,7 @@ Run Jupyter notebook `notebooks/experiment_stable_diffusion.ipynb`
 Before start, generate necessary dataset files and gradient files following steps described in _Unlearning procedure_.
 Run Jupyter notebook `notebooks/experiment_vision_language.ipynb`
 
-### Evaluation on UnlearnCanvas
+## Evaluation on UnlearnCanvas
 First clone UnlearnCanvas repository under `./data`
 ```setup
 cd data
@@ -134,6 +134,7 @@ python a0_create_tar_ucanvas.py
 ```
 
 Following the same step as above (2.) to generate gradient files for each `.tar` forget set.
+Note the 
 
 Lastly, run UnlearnCanvas evaluation:
 ```setup

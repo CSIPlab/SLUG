@@ -56,11 +56,11 @@ def identify_pareto(scores):
         return pareto_index
 
 
-def get_important_layers(celeb_name, pair, model):
+def get_important_layers(celeb_name, pair, model, mask_root):
     model_name, ckpt = pair.split(' ')
     # mask_root = Path(f'clip/grads/name/{celeb_name}_{model_name}_{ckpt}')
     # mask_root = Path(f'data/laion/forget_grads/name/{celeb_name}_{model_name}_{ckpt}')
-    mask_root = Path(f'/home/yt/Lab/unlearning/muwa/src/results/grads/celeb/{celeb_name}_{model_name}_{ckpt}')
+    # mask_root = Path(f'/home/yt/Lab/unlearning/muwa/src/results/grads/celeb/{celeb_name}_{model_name}_{ckpt}')
     forget_importances = torch.load(mask_root/'forget_grads.pt', map_location='cpu')
     retain_importances = torch.load(mask_root/'train_grads.pt', map_location='cpu')
     
@@ -93,7 +93,7 @@ def get_important_layers(celeb_name, pair, model):
     ranked_cos = {k: v for k, v in sorted(cosine_dict.items(), key=lambda item: item[1], reverse=True)}
 
     important_layers = {}
-    save_root = Path(f'clip/figs/output/{model_name}/{celeb_name}/')
+    save_root = Path(f'../results/clip/figs/output/{model_name}/{celeb_name}/')
     save_root.mkdir(parents=True, exist_ok=True)
     # import pdb; pdb.set_trace()
 
@@ -212,16 +212,16 @@ def main(args):
 
     from clip.training.data import get_imagenet
     from clip.training.params import parse_args
-    args = parse_args([])
-    args.imagenet_val = '/home/yt/Lab/unlearning/muwa/data/ImageNet/val'
-    args.device = 'cuda:0'
+    # args = parse_args(args)
+    # args.imagenet_val = '/home/yt/Lab/unlearning/muwa/data/ImageNet/val'
+    # args.device = 'cuda:0'
     preprocess_fns = (preprocess, preprocess)
     split = 'val'
     data_imagenet = get_imagenet(args, preprocess_fns, split, ratio=0.05)
 
 
     # mask_root = Path(f'clip/grads/name/{celeb_name}_{model_name}_{ckpt}')
-    mask_root = Path(f'/home/yt/Lab/unlearning/muwa/src/results/grads/celeb/{celeb_name}_{model_name}_{ckpt}')
+    mask_root = Path(f'../results/grads/{celeb_name}_{model_name}_{ckpt}')
     forget_grads = torch.load(mask_root/'forget_grads.pt', map_location='cpu')
     retain_grads = torch.load(mask_root/'train_grads.pt', map_location='cpu')
     
@@ -294,10 +294,10 @@ def main(args):
     print(f"imagenet zeroshot top1: {test_top1_original*100:.2f}%, top5: {test_top5_original*100:.2f}%")
 
 
-    important_layers = get_important_layers(celeb_name, pair, model)
+    important_layers = get_important_layers(celeb_name, pair, model, mask_root)
 
     # save to txt
-    with open(f'clip/figs/output/{model_name}/{celeb_name}/important_layers.txt', 'w') as f:
+    with open(f'../results/clip/figs/output/{model_name}/{celeb_name}/important_layers.txt', 'w') as f:
         f.write(f"important_layers: {important_layers}\n")
         for part in ['vision', 'language']:
             f.write(f"important layers for {part}: {important_layers[part]}\n")
@@ -330,7 +330,7 @@ def main(args):
             print(f"ratio: {ratio}")
 
 
-            save_root = Path(f'clip/figs/output/{model_name}/{celeb_name}/{model_name}-{part}-{layer_name}')
+            save_root = Path(f'../results/clip/figs/output/{model_name}/{celeb_name}/{model_name}-{part}-{layer_name}')
             save_root.mkdir(parents=True, exist_ok=True)
             
             save_path = save_root/ 'original.png'
@@ -410,11 +410,12 @@ def main(args):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--celeb_name",type=str, default='Elon_Musk', help="celeb name") 
-    parser.add_argument("--imagenet_val",type=str, default='/home/yt/Lab/unlearning/muwa/data/ImageNet/val', help="ImageNet path")
-    # parser.add_argument("--part",type=str, default='vision', help="part to modify")
-    # parser.add_argument("--layer_name",type=str, default='visual.proj', help="layer name") 
-    
-    
+    parser.add_argument("--device", type=str, default='cuda:0')
+    parser.add_argument("--celeb_name", type=str, default='Elon_Musk', help="celeb name") 
+    parser.add_argument("--imagenet-val", type=str, default='../data/ImageNet/val', help="ImageNet path")
+    parser.add_argument("--batch-size", type=int, default=16, help="ImageNet batch size")
+    parser.add_argument("--workers", type=int, default=0, help="Number of workers to load ImageNet")
+    parser.add_argument("--precision", type=str, default='fp32', help="Data type")
+
     args = parser.parse_args()
     main(args)
