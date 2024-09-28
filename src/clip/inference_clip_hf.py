@@ -43,7 +43,7 @@ def create_wds(input_shards, bs=16):
                 wds.select(filter_no_caption_or_no_image),
                 wds.decode("pilrgb", handler=log_and_continue),
                 wds.rename(image="jpg;png;jpeg;webp", text="txt"),
-                # wds.map_dict(image=preprocess_img, text=lambda text: tokenizer(text)[0]),
+
                 wds.to_tuple("image", "text"),
                 wds.batched(bs, partial=True)
             ])
@@ -60,7 +60,7 @@ def create_wds(input_shards, bs=16):
 
     return dataloader
 
-# from clip.open_clip import create_model_and_transforms, trace_model, get_tokenizer, create_loss, get_input_dtype
+
 
 def main(args):
     args = parse_args(args)
@@ -80,7 +80,7 @@ def main(args):
     clip_model_id = args.clip_model_id
     model_repo, model_name = clip_model_id.split('/')
     model_clip = CLIPModel.from_pretrained(clip_model_id)
-    # model_clip = CLIPModel.from_pretrained(clip_model_id, torch_dtype=torch.float16)
+
     processor_clip = CLIPProcessor.from_pretrained(clip_model_id)
     model_clip.to(device)
     model_clip.train()
@@ -147,7 +147,3 @@ def main(args):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
-
-# Path: MUKit/clip/inference_clip_hf.py
-# python -m clip.inference_clip_hf --celeb_name Elon_Musk 
