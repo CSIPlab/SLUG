@@ -1,4 +1,4 @@
-# 🐛SLUG: Single Layer Unlearning Gradient for Targeted Information Unlearning
+# 🐛SLUG: Unlearning Targeted Information via Single Layer Unlearning Gradient
 
 ### [Preprint](https://arxiv.org/abs/2407.11867) | [Code](https://github.com/CSIPlab/slug)
 
@@ -9,7 +9,7 @@ This is the official code repository of *Unlearning Targeted Information via Tar
  
 
 ## Abstract
-Unauthorized privacy-related and copyrighted content generation using generative-AI has becoming a significant concern for human society, raising ethical, legal, and privacy issues that demand urgent attention. The EU's General Data Protection Regulation (GDPR) include a ``right to be forgotten,'' which allows individuals to request the deletion of their personal data. However, this primarily applies to data stored in traditional databases, not AI models.
+Unauthorized privacy-related and copyrighted content generation using generative-AI has becoming a significant concern for human society, raising ethical, legal, and privacy issues that demand urgent attention. The EU's General Data Protection Regulation (GDPR) include a ``right to be forgotten,'' which allows individuals to request the deletion of their personal data. However, this primarily applies to data stored in traditional databases, not AI models. Recently, machine unlearning techniques have arise that attempt to eliminate the influence of sensitive content used during AI model training, but they often require extensive updates to the deployed systems and incur substantial computational costs. In this work, we propose a novel and efficient method called Single Layer Unlearning Gradient (SLUG), that can unlearn targeted information by updating targeted layers of a model using a one-time gradient computation. Our method is highly modular and enables the selective removal of multiple sensitive concepts, such as celebrity names and copyrighted content, from the generated outputs of widely used foundation models (e.g., CLIP) and generative models (e.g., Stable Diffusion). Broadly, our method ensures AI-generated content complies with privacy regulations and intellectual property laws, fostering responsible use of generative models, mitigating legal risks and promoting a trustworthy, socially responsible AI ecosystem.
 
 ## SLUG framework
 
@@ -76,12 +76,13 @@ data
 ```setup
 bash scripts/run_compute_grad.sh
 ```
-This will generate the forgetting gradient file stored at `muwa/src/results/grads`.
+This will generate the forgetting gradient file stored at `SLUG/results/grads`.
 
 3. Perform the _Single Layer Single Gradient_ update by running
 ```setup
 bash scripts/run_unlearn.sh
 ```
+This will generate the Pareto-front plots, consine simularity matrices, and step size searching log stored at `SLUG/results/clip`.
 
 ### Unlearning other celebrity name / object concept
 1. Create the forget set dataset file
@@ -104,12 +105,12 @@ Before start, generate necessary dataset files and gradient files following step
 Run Jupyter notebook `notebooks/experiment_vision_language.ipynb`
 
 ## Evaluation on UnlearnCanvas
-First clone UnlearnCanvas repository under `./data`
+First clone [UnlearnCanvas](https://github.com/OPTML-Group/UnlearnCanvas) repository under `./data`
 ```setup
 cd data
 git clone https://github.com/OPTML-Group/UnlearnCanvas.git
 ```
-Download UnlearnCanvas dataset and pretraind models following the instructions of UnlearnCanvas repository.
+Download UnlearnCanvas dataset and pretraind models following the instructions in the UnlearnCanvas repository.
 The UnlearnCanvas dataset folder is structured as:
 
 ```text
@@ -133,8 +134,11 @@ cd src/clip
 python a0_create_tar_ucanvas.py
 ```
 
-Following the same step as above (2.) to generate gradient files for each `.tar` forget set.
-Note the 
+Following gradient computing step similar to above (Unlearning procedure 2.), to generate gradient files for forget set:
+```setup
+cd [BACK TO SLUG/]
+bash scripts/run_compute_grad_uncanvas.sh
+```
 
 Lastly, run UnlearnCanvas evaluation:
 ```setup
@@ -152,8 +156,8 @@ TODO: upload gradient files to a google drive for fast reproducibility verificat
 Please consider citing our work if you find it helpful:
 
 ```latex
-@article{cai2024single,
-  title={Single Layer Single Gradient Unlearning},
+@article{cai2024unlearning,
+  title={Unlearning Targeted Information via Single Layer Unlearning Gradient},
   author={Cai, Zikui and Tan, Yaoteng and Asif, M Salman},
   journal={arXiv preprint arXiv:2407.11867},
   year={2024}
