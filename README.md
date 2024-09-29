@@ -1,11 +1,8 @@
-# 🐛SLUG: Unlearning Targeted Information via Single Layer Unlearning Gradient
+# 🐛SLUG: Single Layer Unlearning Gradient
 
 ### [Preprint](https://arxiv.org/abs/2407.11867) | [Code](https://github.com/CSIPlab/slug)
 
 This is the official code repository of *Unlearning Targeted Information via Targeted Single Layer Unlearning Gradient*.
-
- [Zikui Cai](https://zikuicai.github.io/), [Yaoteng Tan](https://ytengtan.github.io/), [M. Salman Asif](https://intra.ece.ucr.edu/~sasif/)<br>
- UC Riverside 
  
 
 ## Abstract
@@ -33,9 +30,9 @@ conda env create -f environment.yml
 
 
 ### Datasets (put under data folder):
-- laion-400M, the training set of CLIP model, from which we sample foget set and retain set. First download the parquet files, and then use img2dataset to download the images, use the following [code](https://github.com/rom1504/img2dataset/blob/main/dataset_examples/laion400m.md). The image-text pairs are stored in tar files such as `00000.tar`, 00001.tar and so on. We provide files related to shard 00000 as an example data in this [Google Drive](https://drive.google.com/drive/folders/1K8DCnw3B56hUcxF-8SYWYo-AY1uLAWC1?usp=sharing).
-- ImageNet 2012. We use the imagenet validation set to evaluate CLIP model general performance. Official request access [here](https://www.image-net.org/download.php), or download from this [Google Drive](https://drive.google.com/drive/folders/1K8DCnw3B56hUcxF-8SYWYo-AY1uLAWC1?usp=sharing).  Download and unzip `ILSVRC2012_img_val.tar` under `data/ImageNet/`, and run `bash valprep.sh` to prepare the dataset.
-- CelebA. We sample identities in CelebA dataset to forget. The dataset is available here https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html, or through this [Google Drive](https://drive.usercontent.google.com/download?id=0B7EVK8r0v71pZjFTYXZWM3FlRnM&authuser=0). Request the dataset authors for the name of identities.
+- laion-400M, the training set of CLIP model, from which we sample foget set and retain set. First download the parquet files, and then use img2dataset to download the images, use the following [code](https://github.com/rom1504/img2dataset/blob/main/dataset_examples/laion400m.md). The image-text pairs are stored in tar files such as `00000.tar`, 00001.tar and so on. 
+- ImageNet 2012. We use the imagenet validation set to evaluate CLIP model general performance. Official request access [here](https://www.image-net.org/download.php).  Download and unzip `ILSVRC2012_img_val.tar` under `data/ImageNet/`, and run `bash valprep.sh` to prepare the dataset.
+- CelebA. We sample identities in CelebA dataset to forget. The dataset is available here https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html。
 
 Update `data_root` in `src/clip/a0_eval_celeba.py` to the **absolute path** of where you stored the experimental data.
 
@@ -145,21 +142,3 @@ Lastly, run UnlearnCanvas evaluation:
 bash scripts/run_uncanvas.sh
 ```
 
-
-### Pre-trained gradient files and experimental forget sets
-We upload pre-trained gradient files and the corresponding forget set `.tar` files to this [Google Drive](https://drive.google.com/drive/folders/1K8DCnw3B56hUcxF-8SYWYo-AY1uLAWC1?usp=sharing).
-
-TODO: upload gradient files to a google drive for fast reproducibility verifications.
-
-
-## Citation
-Please consider citing our work if you find it helpful:
-
-```latex
-@article{cai2024unlearning,
-  title={Unlearning Targeted Information via Single Layer Unlearning Gradient},
-  author={Cai, Zikui and Tan, Yaoteng and Asif, M Salman},
-  journal={arXiv preprint arXiv:2407.11867},
-  year={2024}
-}
-```
