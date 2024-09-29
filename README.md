@@ -1,6 +1,5 @@
 # 🐛SLUG: Single Layer Unlearning Gradient
 
-### [Preprint](https://arxiv.org/abs/2407.11867) | [Code](https://github.com/CSIPlab/slug)
 
 This is the official code repository of *Unlearning Targeted Information via Targeted Single Layer Unlearning Gradient*.
  
