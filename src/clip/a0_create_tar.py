@@ -50,7 +50,6 @@ def filter_no_caption_or_no_image(sample):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_root',default='data', type=str, help="dataset directory")
-    # parser.add_argument('--save_root',default='data', type=str, help="directory to save selected images")
     
     parser.add_argument('--name', type=str, required=True, help="concept name")
     parser.add_argument('--workers', default=4, type=int, help="dataset loading setup")
@@ -62,29 +61,8 @@ if __name__ == "__main__":
     concept_name = args.name
     
     # get dataset
-    # data_root = Path("/data/SalmanAsif/celeba")
     data_root = Path(args.data_root)
-    # file_image_name = data_root/"celeba/list_identity_celeba.txt"
-    # with open(file_image_name, 'r') as f:
-    #     # Read the file line by line
-    #     lines = f.readlines()
 
-    # # Initialize an empty dictionary
-    # jpg_dict = defaultdict(list)
-
-    # # Iterate over the lines starting from the second line (index 1)
-    # for line in lines[2:]:
-    #     # Split the line into image_id and identity_name
-    #     image_id, identity_name = line.strip().split()
-    #     # Add the image_id and identity_name to the dictionary
-    #     jpg_dict[identity_name].append(image_id)
-
-    # name_set = set(jpg_dict.keys())
-
-
-
-
-    # input_shards = "/data/SalmanAsif/laion/laion400m/{00000..09539}.tar"
     input_shards = f'{args.data_root}/'+'laion/laion400m/{00000..09539}.tar'
     pipeline = [wds.SimpleShardList(input_shards)]
     pipeline.extend([
@@ -95,7 +73,6 @@ if __name__ == "__main__":
                 wds.decode("pilrgb", handler=log_and_continue),
                 wds.rename(image="jpg;png;jpeg;webp", text="txt"),
                 wds.to_tuple("image", "text"),
-                # wds.batched(args.batch_size, partial=False)
             ])
 
     dataset = wds.DataPipeline(*pipeline)
@@ -112,12 +89,9 @@ if __name__ == "__main__":
     for i, batch in tqdm(enumerate(dataloader)):
         images, texts = batch
 
-        # print(texts)
-        # name = 'castle'
         name = concept_name
         if name.lower() in texts.lower():
             print(f"image {i} - {name}")
-            # save_root = Path(f"/data/SalmanAsif/laion/laion400m_obj/{name}")
             save_root = data_root/f"laion/laion400m_obj/{name}"
             save_root.mkdir(parents=True, exist_ok=True)
             save_name = save_root/f"{name}_{i}.png"
@@ -141,10 +115,6 @@ if __name__ == "__main__":
             # Save as JPG
             jpg_path = png_path.with_suffix('.jpg')
 
-            # old_prefix = Path('/data/SalmanAsif')
-            # new_prefix = Path('./data')
-            # jpg_path = new_prefix / jpg_path.relative_to(old_prefix)
-
             rgb_img.save(jpg_path)
             return jpg_path
 
@@ -153,14 +123,11 @@ if __name__ == "__main__":
     name = concept_name
 
 
-    # folder_path = f"/data/SalmanAsif/laion/laion400m_obj/{name}"
+
     folder_path = data_root/f"laion/laion400m_obj/{name}"
-    # tar_save_path = Path(f"clip/data/names/")
-    # tar_save_path = Path(f"/data/SalmanAsif/laion/forget/objs/")
     tar_save_path = data_root/"tar_files/"
 
-    # folder_path = f"./data/laion/laion400m_celeba/{name}"
-    # tar_save_path = Path(f"./data/laion/forget/names/")
+
     tar_save_path.mkdir(parents=True, exist_ok=True)
     folder_path.mkdir(parents=True, exist_ok=True)
 
@@ -176,7 +143,6 @@ if __name__ == "__main__":
         file_groups[base_name].append(file)
 
     # Create a TAR file to store the data
-    # with tarfile.open("/home/eegrad/zcai/unlearn/data/elon.tar", "w") as tar:
     with tarfile.open(tar_save_path/f"{name}.tar", "w") as tar:
         # Iterate over each base name group
         for base_name, group_files in tqdm(file_groups.items()):

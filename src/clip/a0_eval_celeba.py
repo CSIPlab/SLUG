@@ -7,7 +7,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from clip import open_clip
 from clip.open_clip import build_zero_shot_classifier
-# from training import get_autocast
+
 
 # get celeba dataset
 import random
@@ -15,7 +15,8 @@ from pathlib import Path
 from collections import defaultdict
 from tqdm import tqdm
 
-data_root = Path("/home/yt/Lab/unlearning/muwa/data/celeba")
+# TODO: update data_root to absoulute directory to celeba
+data_root = Path("/.../SLUG/data/celeba")
 
 file_image_name = data_root / "list_identity_celeba.txt"
 with open(file_image_name, 'r') as f:
@@ -124,11 +125,9 @@ if __name__ == "__main__":
         use_tqdm=True,
     )
 
-    # import pdb; pdb.set_trace()
     logging.info('Using classifier')
 
-    # save classifier
-    # torch.save(classifier, "celeba_classifier.pth")
+
 
 
     name = "Elon_Musk"
@@ -139,54 +138,7 @@ if __name__ == "__main__":
 
     celeb100_top1, celeb100_top5 =  eval_celeb_acc(model, classifier, preprocess, device)
     print(f"celeb100 top1: {celeb100_top1*100:.2f}%, top5: {celeb100_top5*100:.2f}%")
-    import pdb; pdb.set_trace()
 
 
-    # for model_name in ["ViT-B-32", "ViT-B-16"]:
-    #     for ckpt in ["laion400m_e31", "openai", "laion2b_s34b_b79k", "laion2b_s34b_b88k"]:
-    #         try:
-    #             model, _, preprocess = open_clip.create_model_and_transforms(model_name, pretrained=ckpt)
-    #             tokenizer = open_clip.get_tokenizer(model_name)
-    #         except:
-    #             continue
-            
-    #         model.to(device)
-    #         save_file_name = f"CLIP_similarity_{model_name}_{ckpt}.txt"
-    #         success_count = 0
-    #         random.seed(42)
-    #         # for each name in name_set, get the image and calculate the similarity with other 9 names
-    #         for name in tqdm(name_set):
-    #             # get the image, randomly select one image from the list
-    #             image_id = random.choice(jpg_dict[name])
-    #             image_path = data_root / "img_align_celeba" / image_id
-    #             image = Image.open(image_path).convert("RGB")
-    #             image = preprocess(image).unsqueeze(0)
-    #             image = image.cuda()
-
-    #             # get the text, randomly select 9 other names
-    #             texts = random.sample(list(name_set - {name}), 9)
-    #             texts = [name] + texts
-    #             texts = [item.replace("_", " ") for item in texts]
-    #             # text_tokens = tokenizer(["This is " + desc for desc in texts]).cuda()
-    #             text_tokens = tokenizer(texts).cuda()
-
-    #             with torch.no_grad(), torch.cuda.amp.autocast():
-    #                 image_features = model.encode_image(image)
-    #                 text_features = model.encode_text(text_tokens)
-    #                 image_features /= image_features.norm(dim=-1, keepdim=True)
-    #                 text_features /= text_features.norm(dim=-1, keepdim=True)
-    #                 similarity = text_features.cpu().numpy() @ image_features.cpu().numpy().T
-    #                 similarity = similarity.flatten().tolist()
-    #                 success = 1 if np.argmax(similarity) == 0 else 0
-    #                 success_count += success
-
-    #             # store the information in a txt file
-    #             info = f"{success}, {image_id}" + "".join([f", {i}, {j}" for i,j in zip(texts, similarity)]) + "\n"
-    #             with open(save_file_name, 'a') as f:
-    #                 f.write(info)
-
-    #         info = f"Success rate: {success_count}/{len(name_set)}={success_count/len(name_set)}"
-    #         with open(save_file_name, 'a') as f:
-    #             f.write(info)
 
             

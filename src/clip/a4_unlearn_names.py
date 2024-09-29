@@ -513,8 +513,8 @@ def main(args):
         unlearn_method = unlearn.get_unlearn_method(args.unlearn_method)
         
         if args.unlearn_method == 'salun':
-            # mask = torch.load(f'/home/eegrad/zcai/unlearn/open_clip/src/contrast_mask_{args.model}/with_0.5.pt')
-            grads_forget = torch.load(f'/home/eegrad/zcai/unlearn/MUKit/clip/grads/name/{args.celeb_name}_{args.model}_{args.pretrained}/forget_grads.pt', map_location='cpu')
+            # mask = torch.load(f'/home/eegrad/.../unlearn/open_clip/src/contrast_mask_{args.model}/with_0.5.pt')
+            grads_forget = torch.load(f'/home/eegrad/.../unlearn/MUKit/clip/grads/name/{args.celeb_name}_{args.model}_{args.pretrained}/forget_grads.pt', map_location='cpu')
             mask = get_salun_mask(grads_forget)
             # unlearn_method(model, criterion, optimizer, unlearn_data_loaders, device, epoch, args, model_ema, scaler, mask)
             unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, mask=mask, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
@@ -522,8 +522,8 @@ def main(args):
             unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, mask=None, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
         elif args.unlearn_method == 'ssd':
             # SSD(model, data, epoch, args, original_importance=None, forget_importance= None, tokenizer=None, preprocess=None, celeb_name=None, date_str='')
-            importance_forget = torch.load(f'/home/eegrad/zcai/unlearn/MUKit/clip/grads/name/{args.celeb_name}_{args.model}_{args.pretrained}/forget_grads.pt', map_location=device)
-            importance_retain = torch.load(f'/home/eegrad/zcai/unlearn/MUKit/clip/grads/name/{args.celeb_name}_{args.model}_{args.pretrained}/train_grads.pt', map_location=device)
+            importance_forget = torch.load(f'/home/eegrad/.../unlearn/MUKit/clip/grads/name/{args.celeb_name}_{args.model}_{args.pretrained}/forget_grads.pt', map_location=device)
+            importance_retain = torch.load(f'/home/eegrad/.../unlearn/MUKit/clip/grads/name/{args.celeb_name}_{args.model}_{args.pretrained}/train_grads.pt', map_location=device)
             dampening_constant = (epoch + 0.2) / 2
             unlearn_method(model, data, epoch, args, original_importance=importance_retain, forget_importance=importance_forget, dampening_constant=dampening_constant, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
         elif args.unlearn_method == 'layer':

@@ -114,7 +114,7 @@ def SSD(model, data, epoch, args, original_importance=None, forget_importance= N
         logging.info(info)
         
 
-        save_dir = "/home/eegrad/zcai/unlearn/muwa/results"
+        save_dir = "/home/eegrad/.../unlearn/muwa/results"
         txt_name = f"{date_str}_{args.model}_{args.celeb_name}_{args.unlearn_method}.txt"
         with open(os.path.join(save_dir, txt_name), 'a') as f:
             f.write(info)

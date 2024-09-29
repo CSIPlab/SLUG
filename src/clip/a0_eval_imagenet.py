@@ -9,18 +9,7 @@ from clip.training.precision import get_autocast
 from clip.training.data import get_imagenet
 from clip.training.params import parse_args
 
-# import open_clip
-# from open_clip import build_zero_shot_classifier, IMAGENET_CLASSNAMES, OPENAI_IMAGENET_TEMPLATES, SIMPLE_IMAGENET_TEMPLATES, get_input_dtype
-# from training.precision import get_autocast
-# from training.data import get_imagenet
-# from training.params import parse_args
 
-# from training import get_autocast
-
-# get celeba dataset
-import random
-from pathlib import Path
-from collections import defaultdict
 from tqdm import tqdm
 
 
@@ -76,7 +65,7 @@ def accuracy_class_wise(output, target, forget_class, topk=(1,)):
         f_acc1, f_acc5 = [float(forget_correct[:k].reshape(-1).float().sum(0, keepdim=True).cpu().numpy()) for k in topk]
         fa_1, fa_5 = f_acc1, f_acc5
 
-        # import pdb; pdb.set_trace()
+        
     else:
         n_f = 0
         correct = pred.eq(target.view(1, -1).expand_as(pred))
@@ -119,35 +108,7 @@ def run_class_wise(model, classifier, dataloader, args, forget_class):
     fa_top5 = (fa_top5 / n_forget)
     return top1, top5, fa_top1, fa_top5
 
-# def run_name(model, classifier, name, preprocess, device):
-    
-#     label = name_list.index(name)
 
-#     top1, top5, n = 0., 0., 0.
-#     for image_id in jpg_dict[name]:
-#         image_path = data_root / "img_align_celeba" / image_id
-#         image = Image.open(image_path).convert("RGB")
-#         image = preprocess(image).unsqueeze(0)
-#         image = image.to(device)
-#         target = torch.tensor([label]).to(device)
-#         # target = target.to(device)
-
-#         with torch.no_grad():
-#             output = model(image=image)
-#         image_features = output['image_features'] if isinstance(output, dict) else output[0]
-#         logits = 100. * image_features @ classifier
-#         # measure accuracy
-#         acc1, acc5 = accuracy(logits, target, topk=(1, 5))
-#         top1 += acc1
-#         top5 += acc5
-#         n += image.size(0)
-
-#     top1 = (top1 / n)
-#     top5 = (top5 / n)
-#     return top1, top5
-
-
-# import pdb; pdb.set_trace()
 
 if __name__ == "__main__":
         
@@ -161,30 +122,18 @@ if __name__ == "__main__":
     tokenizer = open_clip.get_tokenizer(model_name)
     model.to(device)
 
-    # logging.info('Building zero-shot classifier')
-    # classifier = build_zero_shot_classifier(
-    #     model,
-    #     tokenizer=tokenizer,
-    #     classnames=IMAGENET_CLASSNAMES,
-    #     templates=OPENAI_IMAGENET_TEMPLATES,
-    #     num_classes_per_batch=10,
-    #     device=device,
-    #     use_tqdm=True,
-    # )
 
-    # # save classifier
-    # torch.save(classifier, "imagenet_classifier.pth")
 
     classifier = torch.load("imagenet_classifier.pth")
 
     logging.info('Using classifier')
 
     args = parse_args([])
-    args.imagenet_val = '/data/SalmanAsif/ImageNet/val'
+    args.imagenet_val = '../data/ImageNet/val'
     args.device = 'cuda:0'
     preprocess_fns = (preprocess, preprocess)
     split = 'val'
-    # import pdb; pdb.set_trace()
+
     data = get_imagenet(args, preprocess_fns, split, ratio=0.05)
     
     top1, top5 = run(model, classifier, data.dataloader, args)

@@ -219,7 +219,7 @@ def FT(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args,
         logging.info(info)
         
 
-        save_dir = "/home/eegrad/zcai/unlearn/muwa/results"
+        save_dir = "/home/eegrad/.../unlearn/muwa/results"
         if mask == None:
             txt_name = f"{date_str}_{args.model}_{args.celeb_name}_{args.unlearn_method}_lr{args.lr}.txt"
         else:

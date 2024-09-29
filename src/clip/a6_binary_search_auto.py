@@ -207,8 +207,6 @@ def main(args):
     classifier_celeb, classifier_imagenet = build_classifiers(model_pretrained)
 
 
-    # classifier_celeb = torch.load("/home/eegrad/zcai/unlearn/MUKit/celeba_classifier.pth")
-    # classifier_imagenet = torch.load("/home/eegrad/zcai/unlearn/MUKit/imagenet_classifier.pth")
 
     from clip.training.data import get_imagenet
     from clip.training.params import parse_args
@@ -235,28 +233,6 @@ def main(args):
         "https://variety.com/wp-content/uploads/2023/10/GettyImages-1485742278.jpg?w=1024"
     ]
     texts = ["Elon Musk", "Mark Zuckerberg", "Jeff Bezos", "Taylor Swift", "Kim Kardashian"]
-
-    # urls = [
-    #     'https://hips.hearstapps.com/hmg-prod/images/kanye-west-attends-the-christian-dior-show-as-part-of-the-paris-fashion-week-womenswear-fall-winter-2015-2016-on-march-6-2015-in-paris-france-photo-by-dominique-charriau-wireimage-square.jpg?crop=1xw:1.0xh;center,top&resize=640:*',
-    #     'https://i0.wp.com/publicintegrity.org/wp-content/uploads/2017/01/barackobama.jpg?fit=940%2C627&ssl=1',
-    #     'https://nationaltoday.com/wp-content/uploads/2022/10/37-Bruce-Lee-1200x834.jpg.webp',
-    #     'https://static.wikia.nocookie.net/marvelmovies/images/1/19/Fan_Bingbing.jpg/revision/latest?cb=20170420073501',
-    #     'https://hips.hearstapps.com/hmg-prod/images/lady-gaga-attends-netflixs-maestro-los-angeles-photo-call-news-photo-1707081486.jpg?crop=0.708xw:0.959xh;0.120xw,0&resize=1200:*'
-    # ]
-    # texts = ["Kanye West", "Barack Obama", "Bruce Lee", "Fan Bingbing", "Lady Gaga"]
-    # urls = [
-    #     'https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Elon_Musk_Colorado_2022_%28cropped2%29.jpg/220px-Elon_Musk_Colorado_2022_%28cropped2%29.jpg',
-    #     'https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcToA87dFnKkkn7smBpTGguPNZ-2HJz3XGhiXNrvtybCGWLT869i',
-    #     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwhgRcyw94DdjP5cXCFSdC9oIlvc447C-GEqeeJlnRKrQ9RwVd',
-    #     'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Taylor_Swift_at_the_2023_MTV_Video_Music_Awards_%283%29.png/220px-Taylor_Swift_at_the_2023_MTV_Video_Music_Awards_%283%29.png',
-    #     'https://variety.com/wp-content/uploads/2023/10/GettyImages-1485742278.jpg?w=1024',
-    #     'https://hips.hearstapps.com/hmg-prod/images/kanye-west-attends-the-christian-dior-show-as-part-of-the-paris-fashion-week-womenswear-fall-winter-2015-2016-on-march-6-2015-in-paris-france-photo-by-dominique-charriau-wireimage-square.jpg?crop=1xw:1.0xh;center,top&resize=640:*',
-    #     'https://i0.wp.com/publicintegrity.org/wp-content/uploads/2017/01/barackobama.jpg?fit=940%2C627&ssl=1',
-    #     'https://nationaltoday.com/wp-content/uploads/2022/10/37-Bruce-Lee-1200x834.jpg.webp',
-    #     'https://static.wikia.nocookie.net/marvelmovies/images/1/19/Fan_Bingbing.jpg/revision/latest?cb=20170420073501',
-    #     'https://hips.hearstapps.com/hmg-prod/images/lady-gaga-attends-netflixs-maestro-los-angeles-photo-call-news-photo-1707081486.jpg?crop=0.708xw:0.959xh;0.120xw,0&resize=1200:*'
-    # ]
-    # texts = ["Elon Musk", "Mark Zuckerberg", "Jeff Bezos", "Taylor Swift", "Kim Kardashian","Kanye West", "Barack Obama", "Bruce Lee", "Fan Bingbing", "Lady Gaga"]
 
 
     original_images = []

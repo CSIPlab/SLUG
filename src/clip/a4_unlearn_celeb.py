@@ -491,9 +491,9 @@ def main(args):
             unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, mask=None, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
         elif args.unlearn_method in ['salun', 'salun_o']:
             if args.unlearn_method.endswith('_o'):
-                forget_grad_path = f'/home/eegrad/zcai/unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/forget_grads_o.pt'
+                forget_grad_path = f'/home/eegrad/.../unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/forget_grads_o.pt'
             else:
-                forget_grad_path = f'/home/eegrad/zcai/unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/forget_grads.pt'
+                forget_grad_path = f'/home/eegrad/.../unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/forget_grads.pt'
             # check if the file exists
             if not os.path.exists(forget_grad_path):
                 print("generating forget_grads for salun ...")
@@ -508,11 +508,11 @@ def main(args):
             unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, mask=mask, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
         elif args.unlearn_method in ['ssd', 'ssd_o']:
             if args.unlearn_method.endswith('_o'):
-                forget_importance_path = f'/home/eegrad/zcai/unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/forget_importance_o.pt'
-                retain_importance_path = f'/home/eegrad/zcai/unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/train_importance_o.pt'
+                forget_importance_path = f'/home/eegrad/.../unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/forget_importance_o.pt'
+                retain_importance_path = f'/home/eegrad/.../unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/train_importance_o.pt'
             else:
-                forget_importance_path = f'/home/eegrad/zcai/unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/forget_importance.pt'
-                retain_importance_path = f'/home/eegrad/zcai/unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/train_importance.pt'
+                forget_importance_path = f'/home/eegrad/.../unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/forget_importance.pt'
+                retain_importance_path = f'/home/eegrad/.../unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/train_importance.pt'
             if not os.path.exists(forget_importance_path) or not os.path.exists(retain_importance_path):
                 print("generating forget_importance for ssd ...")
                 if args.unlearn_method.endswith('_o'):
