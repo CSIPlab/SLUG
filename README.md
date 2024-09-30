@@ -1,8 +1,5 @@
-# 🐛SLUG: Single Layer Unlearning Gradient
+# SLUG: Single Layer Unlearning Gradient
 
-
-This is the official code repository of *Unlearning Targeted Information via Targeted Single Layer Unlearning Gradient*.
- 
 
 ## Abstract
 Unauthorized privacy-related and copyrighted content generation using generative-AI has becoming a significant concern for human society, raising ethical, legal, and privacy issues that demand urgent attention. The EU's General Data Protection Regulation (GDPR) include a ``right to be forgotten,'' which allows individuals to request the deletion of their personal data. However, this primarily applies to data stored in traditional databases, not AI models. Recently, machine unlearning techniques have arise that attempt to eliminate the influence of sensitive content used during AI model training, but they often require extensive updates to the deployed systems and incur substantial computational costs. In this work, we propose a novel and efficient method called Single Layer Unlearning Gradient (SLUG), that can unlearn targeted information by updating targeted layers of a model using a one-time gradient computation. Our method is highly modular and enables the selective removal of multiple sensitive concepts, such as celebrity names and copyrighted content, from the generated outputs of widely used foundation models (e.g., CLIP) and generative models (e.g., Stable Diffusion). Broadly, our method ensures AI-generated content complies with privacy regulations and intellectual property laws, fostering responsible use of generative models, mitigating legal risks and promoting a trustworthy, socially responsible AI ecosystem.
@@ -29,9 +26,9 @@ conda env create -f environment.yml
 
 
 ### Datasets (put under data folder):
-- laion-400M, the training set of CLIP model, from which we sample foget set and retain set. First download the parquet files, and then use img2dataset to download the images, use the following [code](https://github.com/rom1504/img2dataset/blob/main/dataset_examples/laion400m.md). The image-text pairs are stored in tar files such as `00000.tar`, 00001.tar and so on. 
+- laion-400M, the training set of CLIP model, from which we sample foget set and retain set. First download the parquet files, and then use img2dataset to download the images, use the following [code](https://github.com/rom1504/img2dataset/blob/main/dataset_examples/laion400m.md). The image-text pairs are stored in tar files such as `00000.tar`, `00001.tar` and so on. 
 - ImageNet 2012. We use the imagenet validation set to evaluate CLIP model general performance. Official request access [here](https://www.image-net.org/download.php).  Download and unzip `ILSVRC2012_img_val.tar` under `data/ImageNet/`, and run `bash valprep.sh` to prepare the dataset.
-- CelebA. We sample identities in CelebA dataset to forget. The dataset is available [here](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html).
+- CelebA. We sample identities in CelebA dataset to forget. The dataset is available [here](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html). Request the dataset authors for the name of identities.
 
 Update `data_root` in `src/clip/a0_eval_celeba.py` to the **absolute path** of where you stored the experimental data.
 
@@ -45,7 +42,7 @@ data
 │   │   ├── 010905.jpg
 │   │   ├── 010906.jpg
 │   │   └── ...
-│   └── list_identity_celeba.txt
+│   └── frequent_celebs.txt
 ├── ImageNet
 │   └── val
 │       ├── n01440764
@@ -64,7 +61,9 @@ data
 
 ## 📝 Unlearning procedure
 
-1. Prepare a forget and a retain set. Given an unlearning task, we first curate a forget set containing relevant image-text pairs, then select a retain set.
+
+1. Prepare forget and retain set. Given an unlearning task, we first curate a forget set containing relevant image-text pairs, then sample the retain set from the original training set (e.g. one shard of laion).
+
 
 2. Calculate the gradient from the forget and retain sets.
 
