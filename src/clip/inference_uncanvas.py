@@ -202,8 +202,8 @@ def main(args):
     model_clip.train()
 
     for split in ['forget', 'train']:
-        if split == 'train' and celeb_name != 'Elon_Musk':
-            continue
+        # if split == 'train' and celeb_name != 'Elon_Musk':
+        #     continue
         gradients = dict([(n, torch.zeros_like(p, device=p.device)) for n, p in model_clip.named_parameters()])
 
         if split == 'forget':

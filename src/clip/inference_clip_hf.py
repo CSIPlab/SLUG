@@ -21,7 +21,6 @@ from clip.training.params import parse_args
 
 
 import webdataset as wds
-import logging
 
 
 def log_and_continue(exn):
