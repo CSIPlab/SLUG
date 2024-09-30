@@ -151,9 +151,6 @@ def main(args):
                 print('Error. Sync protocol not supported when using resume latest.')
                 return -1
         if is_master(args):
-            # Checking for existing checkpoint via master rank only. It is possible for
-            # different rank processes to see different files if a shared file-system is under
-            # stress, however it's very difficult to fully work around such situations.
             if args.save_most_recent:
                 # if --save-most-recent flag is set, look for latest at a fixed filename
                 resume_from = os.path.join(checkpoint_path, LATEST_CHECKPOINT_NAME)

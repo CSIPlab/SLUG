@@ -187,28 +187,19 @@ def evaluate_loss(model, dataloader, epoch, args):
                 image_features = model_out["image_features"]
                 text_features = model_out["text_features"]
                 logit_scale = model_out["logit_scale"]
-                # features are accumulated in CPU tensors, otherwise GPU memory exhausted quickly
-                # however, system RAM is easily exceeded and compute time becomes problematic
-                # all_image_features.append(image_features.cpu())
-                # all_text_features.append(text_features.cpu())
+
                 logit_scale = logit_scale.mean()
                 logits_per_image = logit_scale * image_features @ text_features.t()
                 logits_per_text = logits_per_image.t()
 
                 batch_size = images.shape[0]
                 labels = torch.arange(batch_size, device=device).long()
-                # total_loss = (
-                #     F.cross_entropy(logits_per_image, labels) +
-                #     F.cross_entropy(logits_per_text, labels)
-                # ) / 2
 
-                # return the loss for each image-text pair
                 total_loss = (
                     F.cross_entropy(logits_per_image, labels, reduction='none') +
                     F.cross_entropy(logits_per_text, labels, reduction='none')
                 ) / 2
 
-                # gen_loss = maybe_compute_generative_loss(model_out)
 
             loss_list.extend(total_loss.cpu().numpy().tolist())
             dist_list.extend(torch.diagonal(logits_per_image/logit_scale, 0).cpu().numpy().tolist())
@@ -278,9 +269,6 @@ def main(args):
     args = parse_args(args)
 
     if torch.cuda.is_available():
-        # This enables tf32 on Ampere GPUs which is only 8% slower than
-        # float16 and almost as accurate as float32
-        # This was a default in pytorch until 1.12
         torch.backends.cuda.matmul.allow_tf32 = True
         torch.backends.cudnn.benchmark = True
         torch.backends.cudnn.deterministic = False
@@ -646,10 +634,7 @@ def main(args):
     epoch = 0
 
     for epoch in range(1,11):
-    # epoch = 1
-    # ckpt = f"/home/eegrad/zcai/unlearn/MUKit/clip/ckpt/2024_04_26-01_02_07-model_ViT-B-32-lr_1e-05-b_16-j_1-p_fp32/checkpoints/epoch_{epoch}.pt"
-        # ckpt = f"/home/eegrad/zcai/unlearn/MUKit/clip/ckpt/2024_04_30-04_03_18-model_ViT-B-32-lr_1e-06-b_16-j_1-p_fp32/checkpoints/epoch_{epoch}.pt"
-        ckpt = f"/home/eegrad/zcai/unlearn/MUKit/clip/ckpt/2024_04_30-01_52_46-model_ViT-B-32-lr_1e-06-b_16-j_1-p_fp32/checkpoints/epoch_{epoch}.pt"
+        ckpt = f"/home/eegrad/.../unlearn/MUKit/clip/ckpt/2024_04_30-01_52_46-model_ViT-B-32-lr_1e-06-b_16-j_1-p_fp32/checkpoints/epoch_{epoch}.pt"
         
         
         checkpoint = pt_load(ckpt, map_location='cpu')
@@ -663,55 +648,6 @@ def main(args):
         loss_forget, dist_forget = evaluate_loss_dbg(model, data["forget"].dataloader, epoch, args, split="forget")
         loss_test, dist_test = evaluate_loss_dbg(model, data["val"].dataloader, epoch, args, split="test")
         loss_train, dist_train = evaluate_loss_dbg(model, data["train"].dataloader, epoch, args, split="retain")
-        
-    
-    # loss_forget, dist_forget = evaluate_loss(model, data["forget"].dataloader, epoch, args)
-    # loss_train, dist_train = evaluate_loss(model, data["train"].dataloader, epoch, args)
-    # loss_test, dist_test = evaluate_loss(model, data["val"].dataloader, epoch, args)
-
-    # # mean and std of loss
-    # logging.info(f"loss forget: {np.mean(loss_forget):.4f}±{np.std(loss_forget):.4f}")
-    # logging.info(f"loss train: {np.mean(loss_train):.4f}±{np.std(loss_train):.4f}")
-    # logging.info(f"loss test: {np.mean(loss_test):.4f}±{np.std(loss_test):.4f}")
-
-    # logging.info(f"dist train: {np.mean(dist_train):.2f}±{np.std(dist_train):.2f}")
-    # logging.info(f"dist forget: {np.mean(dist_forget):.2f}±{np.std(dist_forget):.2f}")
-    # logging.info(f"dist test: {np.mean(dist_test):.2f}±{np.std(dist_test):.2f}")
-
-    # logging.info(f"Distribution difference between forget and test:")
-    # MIA = membership_inference_attack(loss_forget, loss_test, seed=0)
-    # # print(f"loss MIA: {np.mean(MIA)*100:.2f}±{np.std(MIA)*100:.2f}")
-    # logging.info(f"loss MIA [forget-test]: {np.mean(MIA)*100:.2f}±{np.std(MIA)*100:.2f}")
-    # # print(f"{pd.Series(loss_forget).describe()}")
-    # # print(f"{pd.Series(loss_test).describe()}")
-    # MIA = membership_inference_attack(dist_forget, dist_test, seed=0)
-    # # print(f"dist MIA: {np.mean(MIA)*100:.2f}±{np.std(MIA)*100:.2f}")
-    # logging.info(f"dist MIA [forget-test]: {np.mean(MIA)*100:.2f}±{np.std(MIA)*100:.2f}")
-    # # print(f"{pd.Series(dist_forget).describe()}")
-    # # print(f"{pd.Series(dist_test).describe()}")
-
-    # logging.info(f"Distribution difference between forget and train:")
-    # MIA = membership_inference_attack(loss_forget, loss_train, seed=0)
-    # # print(f"loss MIA: {np.mean(MIA)*100:.2f}±{np.std(MIA)*100:.2f}")
-    # logging.info(f"loss MIA [forget-train]: {np.mean(MIA)*100:.2f}±{np.std(MIA)*100:.2f}")
-    # MIA = membership_inference_attack(dist_forget, dist_train, seed=0)
-    # # print(f"dist MIA: {np.mean(MIA)*100:.2f}±{np.std(MIA)*100:.2f}")
-    # logging.info(f"dist MIA [forget-train]: {np.mean(MIA)*100:.2f}±{np.std(MIA)*100:.2f}")
-    # # print(f"{pd.Series(loss_forget).describe()}")
-    # # print(f"{pd.Series(loss_train).describe()}")
-    # # print(f"{pd.Series(dist_forget).describe()}")
-    # # print(f"{pd.Series(dist_train).describe()}")
-
-    # metrics = {}
-    # # eval on subset of imagenet
-    # zero_shot_metrics = zero_shot_eval(model, data, epoch, args, tokenizer=tokenizer)
-    # metrics.update(zero_shot_metrics)
-    # logging.info(
-    #     f"Eval Epoch: {epoch} "
-    #     + "\t".join([f"{k}: {round(v, 4):.4f}" for k, v in metrics.items()])
-    # )
-    
-    # import pdb; pdb.set_trace()
         
 
     if args.wandb and is_master(args):

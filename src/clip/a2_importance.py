@@ -38,13 +38,6 @@ from clip.training.scheduler import cosine_lr, const_lr, const_lr_cooldown
 from clip.training.train import train_one_epoch, evaluate
 from clip.training.file_utils import pt_load, check_exists, start_sync_process, remote_sync
 from clip.training.distributed import is_master
-from clip.training.precision import get_autocast
-from clip.training.zero_shot import zero_shot_eval
-# from clip import unlearn
-# from clip.a5_mia import evaluate_mia, membership_inference_attack
-# from clip.a6_analyze import get_contrast_mask
-# from mia_util import evaluate_attack_model
-# from clip.a1_evaluate import evaluate_loss
 
 
 LATEST_CHECKPOINT_NAME = "epoch_latest.pt"
@@ -134,9 +127,6 @@ def main(args):
     args = parse_args(args)
 
     if torch.cuda.is_available():
-        # This enables tf32 on Ampere GPUs which is only 8% slower than
-        # float16 and almost as accurate as float32
-        # This was a default in pytorch until 1.12
         torch.backends.cuda.matmul.allow_tf32 = True
         torch.backends.cudnn.benchmark = True
         torch.backends.cudnn.deterministic = False
@@ -146,7 +136,6 @@ def main(args):
 
     # get the name of the experiments
     if args.name is None:
-        # sanitize model name for filesystem / uri use, easier if we don't use / in name as a rule?
         model_name_safe = args.model.replace('/', '-')
         date_str = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
         if args.distributed:
@@ -203,9 +192,6 @@ def main(args):
                 print('Error. Sync protocol not supported when using resume latest.')
                 return -1
         if is_master(args):
-            # Checking for existing checkpoint via master rank only. It is possible for
-            # different rank processes to see different files if a shared file-system is under
-            # stress, however it's very difficult to fully work around such situations.
             if args.save_most_recent:
                 # if --save-most-recent flag is set, look for latest at a fixed filename
                 resume_from = os.path.join(checkpoint_path, LATEST_CHECKPOINT_NAME)

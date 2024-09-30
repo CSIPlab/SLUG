@@ -52,21 +52,13 @@ if __name__ == '__main__':
     part = None
     num_shards = 1
     if part:
-        forget_importances = torch.load(f'/home/eegrad/zcai/unlearn/open_clip/src/importance_mask_{model}/forget_importances_shards_{num_shards}_{part}.pt', map_location='cpu')
-        retain_importances = torch.load(f'/home/eegrad/zcai/unlearn/open_clip/src/importance_mask_{model}/retain_importances_shards_{num_shards}_{part}.pt', map_location='cpu')
+        forget_importances = torch.load(f'/home/eegrad/.../unlearn/open_clip/src/importance_mask_{model}/forget_importances_shards_{num_shards}_{part}.pt', map_location='cpu')
+        retain_importances = torch.load(f'/home/eegrad/.../unlearn/open_clip/src/importance_mask_{model}/retain_importances_shards_{num_shards}_{part}.pt', map_location='cpu')
     else:
-        # forget_importances = torch.load(f'/home/eegrad/zcai/unlearn/open_clip/src/importance_mask_{model}/forget_importances_shards_{num_shards}.pt', map_location='cpu')
-        # retain_importances = torch.load(f'/home/eegrad/zcai/unlearn/open_clip/src/importance_mask_{model}/retain_importances_shards_{num_shards}.pt', map_location='cpu')
         forget_importances = torch.load(mask_root/f'importance_mask_{model}/forget_importances_shards_{num_shards}.pt', map_location='cpu')
         retain_importances = torch.load(mask_root/f'importance_mask_{model}/retain_importances_shards_{num_shards}.pt', map_location='cpu')
     import pdb; pdb.set_trace()
 
-    # model='swin_t'
-    # # model='resnet18'
-    # # mask = torch.load(f'/home/eegrad/zcai/unlearn/MUKit/contrast_mask_{model}/top_0.5_trainratio_0.1.pt')
-    # forget_importances = torch.load(f'/home/eegrad/zcai/unlearn/MUKit/importance_mask_{model}/forget_importances_trainratio_0.1.pt', map_location='cpu')
-    # retain_importances = torch.load(f'/home/eegrad/zcai/unlearn/MUKit/importance_mask_{model}/retain_importances_trainratio_0.1.pt', map_location='cpu')
-    # # import pdb; pdb.set_trace()
 
 
     all_elements_forget = torch.cat([tensor.flatten() for tensor in forget_importances.values()])
@@ -78,24 +70,6 @@ if __name__ == '__main__':
     print(f'Forget importance: min {all_elements_forget.min()}, max {all_elements_forget.max()}, mean {all_elements_forget.mean()}, std {all_elements_forget.std()}')
     print(f'Retain importance: min {all_elements_retain.min()}, max {all_elements_retain.max()}, mean {all_elements_retain.mean()}, std {all_elements_retain.std()}')
 
-    import pdb; pdb.set_trace()
-    # filter out nan values
-    # all_elements_forget = all_elements_forget[~torch.isnan(all_elements_forget)]
-    # all_elements_retain = all_elements_retain[~torch.isnan(all_elements_retain)]
-
-
-    # # analyze the importance mask, calculate the statistics of each layer, including min, max, mean and std
-    # for layer in forget_importances:
-    #     print(f'Layer {layer}')
-    #     print(f'Forget importance: min {forget_importances[layer].min()}, max {forget_importances[layer].max()}, mean {forget_importances[layer].mean()}, std {forget_importances[layer].std()}')
-    #     print(f'Retain importance: min {retain_importances[layer].min()}, max {retain_importances[layer].max()}, mean {retain_importances[layer].mean()}, std {retain_importances[layer].std()}')
-    #     # detect if a layer has nan values
-    #     if torch.isnan(forget_importances[layer]).sum() > 0:
-    #         print(f'Forget importance has nan values')
-    #     if torch.isnan(retain_importances[layer]).sum() > 0:
-    #         print(f'Retain importance has nan values')
-
-    # import pdb; pdb.set_trace()
 
 
     contrast_mask = get_contrast_mask(forget_importances, retain_importances, 0.5)
@@ -103,35 +77,8 @@ if __name__ == '__main__':
     print(f'Percentage of elements that are masked: {100 * all_elements_mask.sum() / all_elements_mask.numel()}')
     mask=contrast_mask
 
-    import pdb; pdb.set_trace()
-
-    # # k = 0.5
-    # for k in range(1,10):
-    #     k = k / 10
-    #     print(k)
-
-    #     contrast_mask = get_contrast_mask(forget_importances, retain_importances, k, part=part)
-    #     all_elements_mask = torch.cat([tensor.flatten() for tensor in contrast_mask.values()])
-    #     print(f'Percentage of elements that are masked: {100 * all_elements_mask.sum() / all_elements_mask.numel()}')
 
 
-        # num_shards = 10
-        # mask_10 = torch.load(f'/home/eegrad/zcai/unlearn/open_clip/src/contrast_mask_{model}/top_{k}_shards_{num_shards}.pt', map_location='cpu')
-        # all_elements_mask_10 = torch.cat([tensor.flatten() for tensor in mask_10.values()])
-        # print(f'Percentage of elements that are masked in top 10 shards: {100 * all_elements_mask_10.sum() / all_elements_mask_10.numel()}')
-
-        # num_shards = 100
-        # mask_100 = torch.load(f'/home/eegrad/zcai/unlearn/open_clip/src/contrast_mask_{model}/top_{k}_shards_{num_shards}.pt', map_location='cpu')
-        # all_elements_mask_100 = torch.cat([tensor.flatten() for tensor in mask_100.values()])
-        # print(f'Percentage of elements that are masked in top 100 shards: {100 * all_elements_mask_100.sum() / all_elements_mask_100.numel()}')
-        
-        # # percentage of elements that are masked in the top 10 shards and in the top 100 shards
-        # print(f'Percentage of elements that are masked in top 10 shards and in top 100 shards: {100 * (all_elements_mask_10 * all_elements_mask_100).sum() / all_elements_mask_10.numel()}')
-
-
-    # which part of the model is beiung masked
-    # mask = mask_10
-    # print('mask 10 shards')
     print('\n Rank by percentage')
     percentage_masked = {}
     for key in mask:
@@ -148,22 +95,7 @@ if __name__ == '__main__':
     number_maksed = {k: v for k, v in sorted(number_maksed.items(), key=lambda item: item[1], reverse=True)}
     for key in number_maksed:
         print(f'Layer {key}: {number_maksed[key]}, {percentage_masked[key]}')
-
-
-    # for key in mask_10:
-    #     # mask_count = mask_100[key].sum()
-    #     # total_count = mask_100[key].numel()
-    #     # if mask_count == 0:
-    #     #     continue
-    #     # print(f'Layer {key}: {100 * mask_count / total_count}% ({mask_count} / {total_count})')
-
-    #     print(f'Layer {key}: {100 * mask_10[key].sum() / mask_10[key].numel()}% ({mask_10[key].sum()} / {mask_10[key].numel()})')
-    #     print(f'Layer {key}: {100 * mask_100[key].sum() / mask_100[key].numel()}% ({mask_100[key].sum()} / {mask_100[key].numel()})')
-    #     print(f'Layer {key}: {100 * (mask_10[key] * mask_100[key]).sum() / mask_10[key].numel()}')
-
-    #     # record and rank the percentage of layers that are masked
         
-
 
     import pdb; pdb.set_trace()
     print()

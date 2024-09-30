@@ -58,9 +58,6 @@ def identify_pareto(scores):
 
 def get_important_layers(celeb_name, pair, model, mask_root):
     model_name, ckpt = pair.split(' ')
-    # mask_root = Path(f'clip/grads/name/{celeb_name}_{model_name}_{ckpt}')
-    # mask_root = Path(f'data/laion/forget_grads/name/{celeb_name}_{model_name}_{ckpt}')
-    # mask_root = Path(f'/home/yt/Lab/unlearning/muwa/src/results/grads/celeb/{celeb_name}_{model_name}_{ckpt}')
     forget_importances = torch.load(mask_root/'forget_grads.pt', map_location='cpu')
     retain_importances = torch.load(mask_root/'train_grads.pt', map_location='cpu')
     
@@ -210,9 +207,7 @@ def main(args):
 
     from clip.training.data import get_imagenet
     from clip.training.params import parse_args
-    # args = parse_args(args)
-    # args.imagenet_val = '/home/yt/Lab/unlearning/muwa/data/ImageNet/val'
-    # args.device = 'cuda:0'
+
     preprocess_fns = (preprocess, preprocess)
     split = 'val'
     data_imagenet = get_imagenet(args, preprocess_fns, split, ratio=0.05)
