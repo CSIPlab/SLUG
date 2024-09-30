@@ -36,7 +36,7 @@ do
         # shards="00000"
         # shards="{00001..00005}"
 
-        forget_data="/data/SalmanAsif/laion/forget/names/${celeb_name}.tar"
+        forget_data="data/tar_files/${celeb_name}.tar"
 
         # during training, lr is 1e-3
         # lr is 1e-5, batch size is 128
@@ -46,11 +46,11 @@ do
         $exe -m clip.$script \
             --save-frequency 100 \
             --zeroshot-frequency 1 \
-            --train-data="/data/SalmanAsif/laion/laion400m/00000.tar"  \
+            --train-data="data/laion/laion400m/00000.tar"  \
             --celeb-name=$celeb_name \
             --forget-data=$forget_data \
-            --val-data='/data/SalmanAsif/cc3m/cc3m/00000.tar' \
-            --imagenet-val='/data/SalmanAsif/ImageNet/val' \
+            --val-data='data/cc3m/cc3m/00000.tar' \
+            --imagenet-val='data/ImageNet/val' \
             --warmup 0 \
             --batch-size=32 \
             --lr=$lr \
