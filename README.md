@@ -62,22 +62,25 @@ data
 ## 📝 Unlearning procedure
 
 
-1. Prepare forget and retain set. Given an unlearning task, we first curate a forget set containing relevant image-text pairs, then sample the retain set from the original training set (e.g. one shard of laion).
+1. **Prepare forget and retain set.** Given an unlearning task, we first curate a forget set containing relevant image-text pairs, then sample the retain set from the original training set (e.g. one shard of laion). The script for curating forget set from laion dataset is `src/clip/a0_create_tar.py`
 
-
-2. Calculate the gradient from the forget and retain sets.
+2. **Calculate forget and retain gradient.** 
 
    Update the route for arguments `--train-data`, `--forget-data`, and `--imagenet-val` in `scripts/run_clip_name.sh`, then run
-```setup
-bash scripts/run_compute_grad.sh
-```
-This will generate the forgetting gradient file stored at `SLUG/results/grads`.
+
+       bash scripts/run_compute_grad.sh
+       
+This will generate the forget gradient file stored in folder `SLUG/results/grads`.
 
 3. Perform the _Single Layer Single Gradient_ update by running
-```setup
-bash scripts/run_unlearn.sh
-```
+
+       bash scripts/run_clip_slug.sh
+
 This will generate the Pareto-front plots, consine simularity matrices, and step size searching log stored at `SLUG/results/clip`.
+
+4. Run comparing methods
+
+       bash scripts/run_clip_comparison.sh
 
 ### Unlearning other celebrity name / object concept
 1. Create the forget set dataset file

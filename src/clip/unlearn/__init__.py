@@ -1,3 +1,4 @@
+from .raw import raw
 from .calc_grad import calc_grad
 from .FT import FT
 from .GA import GA
@@ -5,15 +6,11 @@ from .GAFT import GAFT
 from .SSD import SSD
 
 
-def raw(data_loaders, model, criterion, args, mask=None):
-    pass
-
-
 def get_unlearn_method(name):
     """method usage:
 
     function(data_loaders, model, criterion, args)"""
-    if name == "raw":
+    if name == "raw" or name == "muwa":
         return raw
     elif "calc_grad" in name or "calc_importance" in name:
         return calc_grad

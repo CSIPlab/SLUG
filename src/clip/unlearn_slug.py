@@ -151,6 +151,9 @@ def main(args):
                 print('Error. Sync protocol not supported when using resume latest.')
                 return -1
         if is_master(args):
+            # Checking for existing checkpoint via master rank only. It is possible for
+            # different rank processes to see different files if a shared file-system is under
+            # stress, however it's very difficult to fully work around such situations.
             if args.save_most_recent:
                 # if --save-most-recent flag is set, look for latest at a fixed filename
                 resume_from = os.path.join(checkpoint_path, LATEST_CHECKPOINT_NAME)
@@ -435,157 +438,247 @@ def main(args):
         evaluate(model, data, start_epoch, args, tb_writer=writer, tokenizer=tokenizer)
         return
 
-
     loss = create_loss(args)
     if is_master(args):
         logging.info(f'Start unlearning ...')
 
 
-    def get_salun_mask(gradients):
-        # code from
-        # https://github.com/OPTML-Group/Unlearn-Saliency/blob/master/Classification/generate_mask.py
+    from matplotlib import pyplot as plt
+    from torch import nn
+    def identify_pareto(scores):
+        # Initialize a list to store the index of Pareto points
+        pareto_index = []
+        # Loop through all points
+        for i, (x, y) in enumerate(scores):
+            dominated = False
+            for j, (x2, y2) in enumerate(scores):
+                # Check if point (x2, y2) dominates (x, y)
+                if x2 < x and y2 > y:
+                    dominated = True
+                    break
+            if not dominated:
+                pareto_index.append(i)
+        return pareto_index
 
-        threshold_i = 0.5
-        sorted_dict_positions = {}
-        hard_dict = {}
 
-        # Concatenate all tensors into a single tensor
-        all_elements = - torch.cat([np.abs(tensor.flatten()) for tensor in gradients.values()])
+    def get_important_layers(celeb_name, pair, model):
+        # import ptvsd
+        # # # Enable the debugger
+        # ptvsd.enable_attach(address=('0.0.0.0', 5678))
+        # ptvsd.wait_for_attach()  # Pause until debugger attaches
 
-        # Calculate the threshold index for the top (threshold_i*100)% elements
-        threshold_index = int(len(all_elements) * threshold_i)
+        # debug_port = int(os.environ.get('DEBUG_PORT', '5678'))
+        # ptvsd.enable_attach(address=('0.0.0.0', debug_port))
+        # ptvsd.wait_for_attach()
 
-        # Calculate positions of all elements
-        positions = torch.argsort(all_elements)
-        ranks = torch.argsort(positions)
+        # import pdb; pdb.set_trace()
+        model_name, ckpt = pair.split(' ')
+        # current path src, where this py is executed
+        mask_root = Path(f'../results/grads/{celeb_name}_{model_name}_{ckpt}')
+        forget_importances = torch.load(mask_root/'forget_grads.pt', map_location='cpu')
+        retain_importances = torch.load(mask_root/'train_grads.pt', map_location='cpu')
+        
+        # forget_importances = torch.load('/home/eegrad/zcai/unlearn/slsgu/src/../results/grads/celeb/Elon_Musk_ViT-B-32_laion400m_e32/forget_grads.pt', map_location='cpu')
+        # get model parameters
+        model_params = {}
+        for idx, (k, p) in enumerate(model.named_parameters()):
+            model_params[k] = p.data
+        
+        # get forget importance ratio
+        forget_ratio_dict = {}
+        for layer_name in model_params:
+            params_norm = torch.norm(model_params[layer_name]).item()
+            grad_norm = torch.norm(forget_importances[layer_name]).item()
+            if grad_norm > 0:
+                forget_ratio_dict[layer_name] = grad_norm / params_norm
+            # forget_ratio_dict[layer_name] = (forget_importances[layer_name] / model_params[layer_name]).abs().mean()
+        # sort
+        ranked_forget_ratio = {k: v for k, v in sorted(forget_ratio_dict.items(), key=lambda item: item[1], reverse=True)}
 
-        start_index = 0
-        for key, tensor in gradients.items():
-            num_elements = tensor.numel()
-            # tensor_positions = positions[start_index: start_index + num_elements]
-            tensor_ranks = ranks[start_index : start_index + num_elements]
+        cos = nn.CosineSimilarity(dim=0, eps=1e-6)
+        cosine_dict = {}
+        for layer_name in model_params:
+            if len(retain_importances[layer_name].shape) > 0:
+                # cosine_dict[layer_name] = cos(retain_importances[layer_name].flatten(), forget_importances[layer_name].flatten())
+                cosine_dict[layer_name] = abs(cos(retain_importances[layer_name].flatten(), forget_importances[layer_name].flatten())).item()
+        ranked_cos_name_list = []
+        ranked_cos = {k: v for k, v in sorted(cosine_dict.items(), key=lambda item: item[1], reverse=True)}
 
-            sorted_positions = tensor_ranks.reshape(tensor.shape)
-            sorted_dict_positions[key] = sorted_positions
+        important_layers = {}
+        save_root = Path(f'../results/slug_{celeb_name}/')
+        save_root.mkdir(parents=True, exist_ok=True)
 
-            # Set the corresponding elements to 1
-            threshold_tensor = torch.zeros_like(tensor_ranks)
-            threshold_tensor[tensor_ranks < threshold_index] = 1
-            threshold_tensor = threshold_tensor.reshape(tensor.shape)
-            hard_dict[key] = threshold_tensor
-            start_index += num_elements
-        return hard_dict
+
+        for part in ['vision', 'language']:
+            # make plot
+            name_list = []
+            x_cos_list = []
+            y_ratio_list = []
+            for key in ranked_cos:
+                if "bias" in key: continue
+                if 'logit_scale' in key: continue
+                if 'position' in key: continue
+                if 'embedding' in key: continue
+                # if '.ln_' in key: continue
+                if part == "vision" and "visual" not in key: continue
+                if part != "vision" and "visual" in key: continue
+                
+                name_list.append(key)
+                x_cos_list.append(ranked_cos[key])
+                y_ratio_list.append(ranked_forget_ratio[key])
+            
+            
+            # Use the function to find Pareto front
+            pareto_indices = identify_pareto(list(zip(x_cos_list, y_ratio_list)))
+
+            font_size = 12
+            line_width = 3
+            fig = plt.figure()
+            # ax = fig.add_subplot(111)
+
+            for idx, (name, x, y) in enumerate(zip(name_list, x_cos_list, y_ratio_list)):
+                # if name in ranked_forget_ratio_name_list[:5] or name in ranked_cos_name_list[-5:]:
+                if idx in pareto_indices:
+                    if part not in important_layers:
+                        important_layers[part] = [name]
+                    else:
+                        important_layers[part].append(name)
+                    # plt.scatter(x, y, label=name)
+                    if part == 'vision':
+                        plt.scatter(x, y, label=name.replace('visual.transformer.resblocks.', '').replace('.weight', '').replace('_weight', ''))
+                    else:
+                        plt.scatter(x, y, label=name.replace('transformer.resblocks.', '').replace('.weight', '').replace('_weight', ''))
+                else:
+                    plt.scatter(x, y, marker='x', c='k')
+            plt.xscale('log')
+            plt.yscale('log')
+
+            # plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 10})
+            plt.legend(loc='lower left', bbox_to_anchor=(0, 0), prop={'size': 10}, fancybox=True, framealpha=0.5)
+            # plt.title(f"[{celeb_name}] Layers on Pareto Front (for Vision)")
+            # plt.xlabel("cosine similarity between forget and retain gradients")
+            plt.xlabel("Gradient Alignment", fontsize=font_size, weight='bold')
+            # plt.ylabel("ratio of forget gradients and model weights")
+            plt.ylabel("Importance of Layers", fontsize=font_size, weight='bold')
+
+            plt.tight_layout()
+            plt.savefig(save_root/f'{model_name}-pareto-{part}-{celeb_name}.pdf')
+            plt.close()
+
+        return important_layers, forget_importances
     
 
-    for epoch in range(start_epoch, args.epochs):
-        if is_master(args):
-            logging.info(f'Start epoch {epoch}')
-
-
-        unlearn_method = unlearn.get_unlearn_method(args.unlearn_method)
+    from copy import deepcopy
+    save_root = Path(f'../results/slug_{args.celeb_name}/')
+    save_root.mkdir(parents=True, exist_ok=True)
+    # initial run
+    from .unlearn.raw import evaluate_model
+    
+    epoch = 0
+    model_pretrained = deepcopy(model)
+    forget_acc1_original, forget_acc5_original, celeb100_top1_original, celeb100_top5_original, test_top1_original, test_top5_original, MIA_mean_original, MIA_std_original = evaluate_model(model_pretrained, data, epoch, args, tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name)
+    
+    
+    # get important layers
+    if args.model_name == "ViT-B-32":
+        pair = "ViT-B-32 laion400m_e32"
+    important_layers, forget_grads = get_important_layers(args.celeb_name, pair, model)
+    
+    # save to txt
+    with open(save_root/f'{args.model_name}-important_layers.txt', 'w') as f:
+        f.write(f"important_layers: {important_layers}\n")
+        for part in ['vision', 'language']:
+            f.write(f"important layers for {part}: {important_layers[part]}\n")
+            for layer_name in important_layers[part]:
+                f.write(f"layer name: {layer_name}\n")
+                vector = forget_grads[layer_name].to(device)
+                # get weight norm and ratio
+                params_norm = torch.norm(model_pretrained.get_parameter(layer_name)).item()
+                grad_norm = torch.norm(vector).item()
+                ratio = params_norm/grad_norm
+                f.write(f"params_norm: {params_norm}\n")
+                f.write(f"grad_norm: {grad_norm}\n")
+                f.write(f"ratio: {ratio}\n")
         
-        if args.unlearn_method in ['ft', 'ga', 'gaft', 'ga_o', 'gaft_o']:
-            unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, mask=None, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
-        elif args.unlearn_method in ['salun', 'salun_o']:
-            if args.unlearn_method.endswith('_o'):
-                forget_grad_path = f'/home/eegrad/.../unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/forget_grads_o.pt'
-            else:
-                forget_grad_path = f'/home/eegrad/.../unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/forget_grads.pt'
-            # check if the file exists
-            if not os.path.exists(forget_grad_path):
-                print("generating forget_grads for salun ...")
-                if args.unlearn_method.endswith('_o'):
-                    calc_grads = unlearn.get_unlearn_method('calc_grad_o')
+
+    for part in ['vision', 'language']:
+        
+        print(f"important layers for {part}: {important_layers[part]}")
+        for layer_name in important_layers[part]:
+            print(f"layer name: {layer_name}")
+            
+
+            vector = forget_grads[layer_name].to(device)
+            # get weight norm and ratio
+            params_norm = torch.norm(model_pretrained.get_parameter(layer_name)).item()
+            grad_norm = torch.norm(vector).item()
+            ratio = params_norm/grad_norm
+            print(f"params_norm: {params_norm}")
+            print(f"grad_norm: {grad_norm}")
+            print(f"ratio: {ratio}")
+
+
+            # Binary search algorithm
+            # Constants
+            INITIAL_RATIO_DIVISOR = 10
+            MAX_ITERATIONS = 10
+            TOLERANCE = 0.01
+
+            # Initialize variables
+            cnt = 0  # Search count
+
+            info = f"iter: {cnt}, ratio: 0, fgt_acc@1: {forget_acc1_original}, fgt_acc@5: {forget_acc5_original}, celeba100@1: {celeb100_top1_original}, celeba100@5: {celeb100_top5_original}, test_acc@1: {test_top1_original}, test_acc@5: {test_top5_original}, MIA: {MIA_mean_original:.2f}±{MIA_std_original:.2f}\n"
+            logging.info(info)
+            # info = f"iter: {cnt}, ratio: {ratio}, fgt_acc@1: {forget_acc1}, fgt_acc@5: {forget_acc5}, test_acc@1: {test_top1}, test_acc@5: {test_top5}"
+            print(info)
+            # save to txt
+            with open(save_root/f'log_{args.model_name}-{part}-{layer_name}.txt', 'a') as f:
+                f.write(f"{info}\n")
+
+            # Main loop for adjusting the ratio
+            while cnt < MAX_ITERATIONS:
+                
+                if cnt == 0:
+                    # Start with 1/10 of the norm ratio
+                    ratio = - (ratio / INITIAL_RATIO_DIVISOR)
+                    ratio_low = 0
+                    ratio_high = float('inf')
+                    print(f"Start with ratio: {ratio}")
                 else:
-                    calc_grads = unlearn.get_unlearn_method('calc_grad')
-                calc_grads(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args)
-                print("finished generating forget_grads for salun \n")
-            grads_forget = torch.load(forget_grad_path, map_location='cpu')
-            mask = get_salun_mask(grads_forget)
-            unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, mask=mask, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
-        elif args.unlearn_method in ['ssd', 'ssd_o']:
-            if args.unlearn_method.endswith('_o'):
-                forget_importance_path = f'/home/eegrad/.../unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/forget_importance_o.pt'
-                retain_importance_path = f'/home/eegrad/.../unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/train_importance_o.pt'
-            else:
-                forget_importance_path = f'/home/eegrad/.../unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/forget_importance.pt'
-                retain_importance_path = f'/home/eegrad/.../unlearn/muwa/data/grads/celeb/{args.celeb_name}_{args.model}_{args.pretrained}/train_importance.pt'
-            if not os.path.exists(forget_importance_path) or not os.path.exists(retain_importance_path):
-                print("generating forget_importance for ssd ...")
-                if args.unlearn_method.endswith('_o'):
-                    calc_grads = unlearn.get_unlearn_method('calc_grad_o')
-                else:
-                    calc_grads = unlearn.get_unlearn_method('calc_grad')
-                calc_grads(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, norm="l2")
-                print("finished generating forget_importance for ssd \n")
-            importance_forget = torch.load(forget_importance_path, map_location=device)
-            importance_retain = torch.load(retain_importance_path, map_location=device)
-            # from 0.1 to 5
-            # dampening_constant = np.linspace(0.1,5,10)[epoch]
-            dampening_constant = np.linspace(0.1,5,10)[epoch]
-            unlearn_method(model, data, epoch, args, original_importance=importance_retain, forget_importance=importance_forget, dampening_constant=dampening_constant, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
-        elif args.unlearn_method == 'ga_layer':
-            # only update a certain layer
-            # mask_layer = 'visual.transformer.resblocks.5.attn.in_proj_weight'
-            mask_layer = args.unlearn_layer
-            print(f"mask_layer: {mask_layer}")
-            # make mask, set all parameters to 0 except for the layer
-            mask = {}
-            for name, param in model.named_parameters():
-                if mask_layer in name:
-                    mask[name] = torch.ones_like(param).cpu()
-                else:
-                    mask[name] = torch.zeros_like(param).cpu()
-            # import pdb; pdb.set_trace()
-            unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, mask=mask, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
-        elif args.unlearn_method == 'calc_grad':
-            unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args)
-            break
-        elif args.unlearn_method == 'calc_importance':
-            unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, norm='l2')
-            break
+                    if forget_acc5 == 0:
+                        # Reduce the gradient
+                        ratio_high = ratio
+                        ratio = (ratio_low + ratio_high) / 2
+                        print(f"[Reduce ratio] Iteration: {cnt}, Ratio: {ratio}, Ratio_low: {ratio_low}, Ratio_high: {ratio_high}")
 
-        completed_epoch = epoch + 1
+                    elif forget_acc5 > 0:
+                        # Magnify the gradient
+                        ratio_low = ratio
+                        if ratio_high != float('inf'):
+                            ratio = (ratio_low + ratio_high) / 2
+                            print(f"[Increase ratio] Iteration: {cnt}, Ratio: {ratio}, Ratio_low: {ratio_low}, Ratio_high: {ratio_high}")
+                        else:
+                            ratio = ratio * 2
+                            print(f"[Increase ratio] Iteration: {cnt}, Ratio: {ratio}, Ratio_low: {ratio_low}, Ratio_high: None")
 
-        # Saving checkpoints.
-        if args.save_logs:
-            if args.unlearn_method == 'layer':
-                checkpoint_dict = {
-                    "epoch": completed_epoch,
-                    "name": args.name,
-                    "layer_name": args.unlearn_layer,
-                    "state_dict": original_model.state_dict()[args.unlearn_layer],
-                    # "optimizer": optimizer.state_dict(),
-                }
-            else:
-                checkpoint_dict = {
-                    "epoch": completed_epoch,
-                    "name": args.name,
-                    "state_dict": original_model.state_dict(),
-                    # "optimizer": optimizer.state_dict(),
-                }
-            if scaler is not None:
-                checkpoint_dict["scaler"] = scaler.state_dict()
 
-            if completed_epoch == args.epochs or (
-                args.save_frequency > 0 and (completed_epoch % args.save_frequency) == 0
-            ):
-                torch.save(
-                    checkpoint_dict,
-                    os.path.join(args.checkpoint_path, f"epoch_{completed_epoch}.pt"),
-                )
-            if args.delete_previous_checkpoint:
-                previous_checkpoint = os.path.join(args.checkpoint_path, f"epoch_{completed_epoch - 1}.pt")
-                if os.path.exists(previous_checkpoint):
-                    os.remove(previous_checkpoint)
+                print(f"iter: {cnt}, ratio: {ratio}")
+                model = deepcopy(model_pretrained)
+                model.get_parameter(layer_name).data = model_pretrained.get_parameter(layer_name).data + ratio*vector
 
-            if args.save_most_recent:
-                # try not to corrupt the latest checkpoint if save fails
-                tmp_save_path = os.path.join(args.checkpoint_path, "tmp.pt")
-                latest_save_path = os.path.join(args.checkpoint_path, LATEST_CHECKPOINT_NAME)
-                torch.save(checkpoint_dict, tmp_save_path)
-                os.replace(tmp_save_path, latest_save_path)
-     
+                cnt += 1  # Increment the search count
+                epoch = cnt
+                forget_acc1, forget_acc5, celeb100_top1, celeb100_top5, test_top1, test_top5, MIA_mean, MIA_std = evaluate_model(model, data, epoch, args, tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name)
+                # forget_acc1, forget_acc5, celeb100_top1, celeb100_top5, test_top1, test_top5, MIA_mean, MIA_std = unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, tb_writer=writer, mask=None, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
+
+                info = f"iter: {cnt}, ratio: {ratio}, fgt_acc@1: {forget_acc1}, fgt_acc@5: {forget_acc5}, celeba100@1: {celeb100_top1}, celeba100@5: {celeb100_top5}, test_acc@1: {test_top1}, test_acc@5: {test_top5}, MIA: {MIA_mean:.2f}±{MIA_std:.2f}\n"
+                logging.info(info)
+                # info = f"iter: {cnt}, ratio: {ratio}, fgt_acc@1: {forget_acc1}, fgt_acc@5: {forget_acc5}, test_acc@1: {test_top1}, test_acc@5: {test_top5}"
+                print(info)
+                # save to txt
+                with open(save_root/f'log_{args.model_name}-{part}-{layer_name}.txt', 'a') as f:
+                    f.write(f"{info}\n")
+
 
     if args.wandb and is_master(args):
         wandb.finish()

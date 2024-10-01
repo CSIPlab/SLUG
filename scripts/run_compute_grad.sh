@@ -9,7 +9,6 @@ unlearn="calc_grad"
 pairs=(
   "ViT-B-32 laion400m_e32"
   # "ViT-B-16 laion400m_e32"
-  # "convnext_base laion400m_s13b_b51k"
   # "ViT-L-14 laion400m_e32"
   # "EVA01-g-14 laion400m_s11b_b41k"
 )
@@ -21,9 +20,6 @@ for pair in "${pairs[@]}"; do
   exe="python"
 
   shards="00000"
-  # shards="{00001..00005}"
-  # shards="{00001..00010}"
-  # shards="{00001..00020}"
 
   celeb_names=(
     "Elon_Musk"

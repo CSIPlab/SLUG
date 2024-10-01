@@ -138,7 +138,7 @@ def calc_grad(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model
 
         # save the gradients
         if is_master(args):
-            mask_save_root = Path(f"../results/grads/{args.celeb_name}_{args.model}_{args.pretrained}") # 'SLUG/results/grads'
+            mask_save_root = Path(f"{args.result_dir}/grads/{args.celeb_name}_{args.model}_{args.pretrained}")
             mask_save_root.mkdir(parents=True, exist_ok=True)
             if norm is None:
                 if args.unlearn_method.endswith('_o'):

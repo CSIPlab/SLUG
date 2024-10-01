@@ -105,8 +105,7 @@ if __name__ == "__main__":
         if n_selected_imgs > args.n_imgs:
             break
 
-
-
+    
     def convert_png_to_jpg(png_path):
         # Open the PNG image
         with Image.open(png_path) as img:
@@ -121,8 +120,6 @@ if __name__ == "__main__":
 
 
     name = concept_name
-
-
 
     folder_path = data_root/f"laion/laion400m_obj/{name}"
     tar_save_path = data_root/"tar_files/"

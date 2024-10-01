@@ -38,62 +38,13 @@ from clip.training.scheduler import cosine_lr, const_lr, const_lr_cooldown
 from clip.training.train import train_one_epoch, evaluate
 from clip.training.file_utils import pt_load, check_exists, start_sync_process, remote_sync
 from clip.training.distributed import is_master
+from clip.training.precision import get_autocast
+from clip.training.zero_shot import zero_shot_eval
+
+from clip import unlearn
 
 
 LATEST_CHECKPOINT_NAME = "epoch_latest.pt"
-
-
-def calc_importance(model, dataloader, loss, epoch, optimizer, args):
-    device = torch.device(args.device)
-    # autocast = get_autocast(args.precision)
-    input_dtype = get_input_dtype(args.precision)
-
-    num_samples = 0
-    samples_per_val = dataloader.num_samples
-    # num_batches_per_epoch = dataloader.num_batches // args.accum_freq
-
-    # freeze the parameters of transformer
-    if args.unlearn_part == 'vision':
-        for name, param in model.named_parameters():
-            if 'visual' not in name:
-                param.requires_grad = False
-
-    # import pdb; pdb.set_trace()
-    importances = dict([(k, torch.zeros_like(p, device=p.device)) for k, p in model.named_parameters()])
-    for i, batch in enumerate(dataloader):
-        images, texts = batch
-        batch_size = images.shape[0]
-        images = images.to(device=device, dtype=input_dtype, non_blocking=True)
-        texts = texts.to(device=device, non_blocking=True)
-        optimizer.zero_grad()
-
-        # with autocast():
-        model_out = model(images, texts)
-        losses = loss(**model_out, output_dict=True)
-
-        total_loss = sum(losses.values())
-        losses["loss"] = total_loss
-
-        # backward(total_loss, scaler)
-        total_loss.backward()
-        # backward(total_loss, scaler=None)
-        
-        for (k1, p), (k2, imp) in zip(
-                model.named_parameters(), importances.items()
-            ):
-                if p.grad is not None:
-                    imp.data += p.grad.data.clone().pow(2)
-    
-        num_samples += batch_size
-        if is_master(args) and (i % 100) == 0:
-            logging.info(
-                f"Eval Epoch: {epoch} [{num_samples} / {samples_per_val}]\t")
-                
-    # import pdb; pdb.set_trace()
-    # average over mini batch length
-    for _, imp in importances.items():
-        imp.data /= float(dataloader.num_batches)
-    return importances
 
 
 def random_seed(seed=42, rank=0):
@@ -125,8 +76,12 @@ def get_latest_checkpoint(path: str, remote : bool):
 
 def main(args):
     args = parse_args(args)
+    date_str = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
 
     if torch.cuda.is_available():
+        # This enables tf32 on Ampere GPUs which is only 8% slower than
+        # float16 and almost as accurate as float32
+        # This was a default in pytorch until 1.12
         torch.backends.cuda.matmul.allow_tf32 = True
         torch.backends.cudnn.benchmark = True
         torch.backends.cudnn.deterministic = False
@@ -136,6 +91,7 @@ def main(args):
 
     # get the name of the experiments
     if args.name is None:
+        # sanitize model name for filesystem / uri use, easier if we don't use / in name as a rule?
         model_name_safe = args.model.replace('/', '-')
         date_str = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
         if args.distributed:
@@ -150,7 +106,10 @@ def main(args):
             f"p_{args.precision}",
         ])
 
+    if args.distributed:
+        args.name = args.name + f"-distributed"
     resume_latest = args.resume == 'latest'
+    args.logs = "clip/ckpt/"
     log_base_path = os.path.join(args.logs, args.name)
     args.log_path = None
     if is_master(args, local=args.log_local):
@@ -192,6 +151,9 @@ def main(args):
                 print('Error. Sync protocol not supported when using resume latest.')
                 return -1
         if is_master(args):
+            # Checking for existing checkpoint via master rank only. It is possible for
+            # different rank processes to see different files if a shared file-system is under
+            # stress, however it's very difficult to fully work around such situations.
             if args.save_most_recent:
                 # if --save-most-recent flag is set, look for latest at a fixed filename
                 resume_from = os.path.join(checkpoint_path, LATEST_CHECKPOINT_NAME)
@@ -409,7 +371,6 @@ def main(args):
         tokenizer=tokenizer,
     )
     assert len(data), 'At least one train or eval dataset must be specified.'
-
     
 
     # create scheduler if train
@@ -477,30 +438,160 @@ def main(args):
         evaluate(model, data, start_epoch, args, tb_writer=writer, tokenizer=tokenizer)
         return
 
+
     loss = create_loss(args)
+    if is_master(args):
+        logging.info(f'Start unlearning ...')
+
+
+    def get_salun_mask(gradients):
+        # code from
+        # https://github.com/OPTML-Group/Unlearn-Saliency/blob/master/Classification/generate_mask.py
+
+        threshold_i = 0.5
+        sorted_dict_positions = {}
+        hard_dict = {}
+
+        # Concatenate all tensors into a single tensor
+        all_elements = - torch.cat([np.abs(tensor.flatten()) for tensor in gradients.values()])
+
+        # Calculate the threshold index for the top (threshold_i*100)% elements
+        threshold_index = int(len(all_elements) * threshold_i)
+
+        # Calculate positions of all elements
+        positions = torch.argsort(all_elements)
+        ranks = torch.argsort(positions)
+
+        start_index = 0
+        for key, tensor in gradients.items():
+            num_elements = tensor.numel()
+            # tensor_positions = positions[start_index: start_index + num_elements]
+            tensor_ranks = ranks[start_index : start_index + num_elements]
+
+            sorted_positions = tensor_ranks.reshape(tensor.shape)
+            sorted_dict_positions[key] = sorted_positions
+
+            # Set the corresponding elements to 1
+            threshold_tensor = torch.zeros_like(tensor_ranks)
+            threshold_tensor[tensor_ranks < threshold_index] = 1
+            threshold_tensor = threshold_tensor.reshape(tensor.shape)
+            hard_dict[key] = threshold_tensor
+            start_index += num_elements
+        return hard_dict
     
-    if is_master(args):
-        logging.info(f'Start generating mask ...')
-    model.eval()
 
-    epoch = 0
-    data_loader_forget = data['forget'].dataloader
-    data_loader_train = data['train'].dataloader
-    forget_importances = calc_importance(model, data_loader_forget, loss, epoch, optimizer, scaler, scheduler, dist_model, args, tb_writer=None)
-    retain_importances = calc_importance(model, data_loader_train, loss, epoch, optimizer, scaler, scheduler, dist_model, args, tb_writer=None)
+    os.makedirs(args.result_dir, exist_ok=True)
+    grad_root = Path(f"{args.result_dir}/grads/{args.celeb_name}_{args.model}_{args.pretrained}")
+    for epoch in range(start_epoch, args.epochs):
+        if is_master(args):
+            logging.info(f'Start epoch {epoch}')
 
-    # save the mask
-    if is_master(args):
-        mask_save_root = Path(f"clip/mask/importance_mask_{args.model}")
-        mask_save_root.mkdir(parents=True, exist_ok=True)
-        if args.unlearn_part:
-            torch.save(forget_importances, os.path.join(mask_save_root, f"forget_importances_shards_{data_loader_train.num_shards}_{args.unlearn_part}.pt"))
-            torch.save(retain_importances, os.path.join(mask_save_root, f"retain_importances_shards_{data_loader_train.num_shards}_{args.unlearn_part}.pt"))
-        else:
-            torch.save(forget_importances, os.path.join(mask_save_root, f"forget_importances_shards_{data_loader_train.num_shards}.pt"))
-            torch.save(retain_importances, os.path.join(mask_save_root, f"retain_importances_shards_{data_loader_train.num_shards}.pt"))
 
-    # import pdb; pdb.set_trace()
+        unlearn_method = unlearn.get_unlearn_method(args.unlearn_method)
+        
+        if args.unlearn_method == 'raw':
+            unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, mask=None, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
+            break
+        elif args.unlearn_method in ['ft', 'ga', 'gaft', 'ga_o', 'gaft_o']:
+            unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, mask=None, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
+        elif args.unlearn_method in ['salun', 'salun_o']:
+            if args.unlearn_method.endswith('_o'):
+                forget_grad_path = f'{grad_root}/forget_grads_o.pt'
+            else:
+                forget_grad_path = f'{grad_root}/forget_grads.pt'
+            # check if the file exists
+            if not os.path.exists(forget_grad_path):
+                print("generating forget_grads for salun ...")
+                if args.unlearn_method.endswith('_o'):
+                    calc_grads = unlearn.get_unlearn_method('calc_grad_o')
+                else:
+                    calc_grads = unlearn.get_unlearn_method('calc_grad')
+                calc_grads(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args)
+                print("finished generating forget_grads for salun \n")
+            grads_forget = torch.load(forget_grad_path, map_location='cpu')
+            mask = get_salun_mask(grads_forget)
+            unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, mask=mask, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
+        elif args.unlearn_method in ['ssd', 'ssd_o']:
+            if args.unlearn_method.endswith('_o'):
+                forget_importance_path = f'{grad_root}/forget_importance_o.pt'
+                retain_importance_path = f'{grad_root}/train_importance_o.pt'
+            else:
+                forget_importance_path = f'{grad_root}/forget_importance.pt'
+                retain_importance_path = f'{grad_root}/train_importance.pt'
+            if not os.path.exists(forget_importance_path) or not os.path.exists(retain_importance_path):
+                print("generating forget_importance for ssd ...")
+                if args.unlearn_method.endswith('_o'):
+                    calc_grads = unlearn.get_unlearn_method('calc_grad_o')
+                else:
+                    calc_grads = unlearn.get_unlearn_method('calc_grad')
+                calc_grads(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, norm="l2")
+                print("finished generating forget_importance for ssd \n")
+            importance_forget = torch.load(forget_importance_path, map_location=device)
+            importance_retain = torch.load(retain_importance_path, map_location=device)
+            # from 0.1 to 5
+            # dampening_constant = np.linspace(0.1,5,10)[epoch]
+            dampening_constant = np.linspace(0.1,5,10)[epoch]
+            unlearn_method(model, data, epoch, args, original_importance=importance_retain, forget_importance=importance_forget, dampening_constant=dampening_constant, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
+        elif args.unlearn_method == 'ga_layer':
+            # only update a certain layer
+            mask_layer = args.unlearn_layer
+            print(f"mask_layer: {mask_layer}")
+            # make mask, set all parameters to 0 except for the layer
+            mask = {}
+            for name, param in model.named_parameters():
+                if mask_layer in name:
+                    mask[name] = torch.ones_like(param).cpu()
+                else:
+                    mask[name] = torch.zeros_like(param).cpu()
+            # import pdb; pdb.set_trace()
+            unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, mask=mask, tokenizer=tokenizer, preprocess=preprocess_val, celeb_name=args.celeb_name, date_str=date_str)
+        elif args.unlearn_method == 'calc_grad':
+            unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args)
+            break
+        elif args.unlearn_method == 'calc_importance':
+            unlearn_method(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, norm='l2')
+            break
+
+        completed_epoch = epoch + 1
+
+        # Saving checkpoints.
+        if args.save_logs:
+            if args.unlearn_method == 'layer':
+                checkpoint_dict = {
+                    "epoch": completed_epoch,
+                    "name": args.name,
+                    "layer_name": args.unlearn_layer,
+                    "state_dict": original_model.state_dict()[args.unlearn_layer],
+                    # "optimizer": optimizer.state_dict(),
+                }
+            else:
+                checkpoint_dict = {
+                    "epoch": completed_epoch,
+                    "name": args.name,
+                    "state_dict": original_model.state_dict(),
+                    # "optimizer": optimizer.state_dict(),
+                }
+            if scaler is not None:
+                checkpoint_dict["scaler"] = scaler.state_dict()
+
+            if completed_epoch == args.epochs or (
+                args.save_frequency > 0 and (completed_epoch % args.save_frequency) == 0
+            ):
+                torch.save(
+                    checkpoint_dict,
+                    os.path.join(args.checkpoint_path, f"epoch_{completed_epoch}.pt"),
+                )
+            if args.delete_previous_checkpoint:
+                previous_checkpoint = os.path.join(args.checkpoint_path, f"epoch_{completed_epoch - 1}.pt")
+                if os.path.exists(previous_checkpoint):
+                    os.remove(previous_checkpoint)
+
+            if args.save_most_recent:
+                # try not to corrupt the latest checkpoint if save fails
+                tmp_save_path = os.path.join(args.checkpoint_path, "tmp.pt")
+                latest_save_path = os.path.join(args.checkpoint_path, LATEST_CHECKPOINT_NAME)
+                torch.save(checkpoint_dict, tmp_save_path)
+                os.replace(tmp_save_path, latest_save_path)
      
 
     if args.wandb and is_master(args):
