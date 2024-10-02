@@ -12,6 +12,8 @@ from clip.open_clip import get_input_dtype
 from clip.training.distributed import is_master
 from clip.training.precision import get_autocast
 
+from mia_util import evaluate_attack_model
+
 # get celeba dataset
 import random
 from pathlib import Path
@@ -151,3 +153,28 @@ def evaluate_loss(model, dataloader, epoch, args):
                     f"Eval Epoch: {epoch} [{num_samples} / {samples_per_val}]\t")
 
     return loss_list, dist_list
+
+def membership_inference_attack(loss_test, loss_forget, seed):
+    min_len = min(len(loss_test), len(loss_forget))
+
+    # repeat the experiment 10 times
+    attack_scores = []
+    n = 10
+    for s in range(seed, seed+n):
+        # Ensure equal number of samples for both sets
+        np.random.seed(s)
+        random.seed(s)
+        forget_losses_sample = random.sample(loss_forget, min_len)
+        test_losses_sample = random.sample(loss_test, min_len)
+        
+        # Prepare data for attack model evaluation
+        test_labels = [0] * min_len
+        forget_labels = [1] * min_len
+        features = np.array(test_losses_sample + forget_losses_sample).reshape(-1, 1)
+        labels = np.array(test_labels + forget_labels).reshape(-1)
+        features = np.clip(features, -100, 100)
+
+        # Evaluate attack model and return score
+        attack_score = evaluate_attack_model(features, labels, n_splits=10, random_state=s)
+        attack_scores.append(np.mean(attack_score))
+    return attack_scores
