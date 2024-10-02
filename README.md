@@ -66,7 +66,7 @@ data
 
 2. **Calculate forget and retain gradient.** 
 
-   Update the route for arguments `--train-data`, `--forget-data`, and `--imagenet-val` in `scripts/run_clip_name.sh`, then run
+   Update the route for arguments `--train-data`, `--forget-data`, and `--imagenet-val` in `scripts/run_compute_grad.sh`, then run
 
        bash scripts/run_compute_grad.sh
        

@@ -34,7 +34,7 @@ for pair in "${pairs[@]}"; do
   for celeb_name in "${celeb_names[@]}"; do
     echo "Processing name: $celeb_name"
 
-    $exe -m clip.a4_unlearn_names \
+    $exe -m clip.unlearn_compare \
         --save-frequency 1 \
         --zeroshot-frequency 1 \
         --train-data="[ABSOLUTE_DIR_TO_SLUG]/data/laion/laion400m/${shards}.tar" \
