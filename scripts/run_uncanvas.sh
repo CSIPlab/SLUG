@@ -10,7 +10,7 @@ unlearn_tasks=(
 for unlearn_task in "${unlearn_tasks[@]}"; do
   echo "Unlearning $unlearn_task on UnlearnCanvas:"
   
-  python -m clip.a6_uncanvas \
+  python -m clip.eval_uncanvas \
       --uncanvas='../data/UnlearnCanvas' \
       --unlearn_task $unlearn_task \
   
