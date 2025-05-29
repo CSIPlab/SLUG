@@ -3,7 +3,7 @@ Pytorch implementation of *Targeted Unlearning with Single Layer Unlearning Grad
 
 [![preprint](https://img.shields.io/badge/arXiv-2407.11867-B31B1B)](https://arxiv.org/abs/2407.11867)
 [![project page](https://img.shields.io/badge/Project_Page-Link-green)](https://efficient-unlearning.github.io/SLUG/)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1sjLWKPIXi961KPV-t1ugIdwaF7bdBjt7?usp=sharing)
+<!-- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1sjLWKPIXi961KPV-t1ugIdwaF7bdBjt7?usp=sharing) -->
 
 
  
@@ -102,7 +102,7 @@ And a `.tar` file containing the selected images, under `data/tar_files/{concept
 
 2. Repeat the unlearning procedure to generate unlearning gradient using the created `.tar` file, and perform unlearning.
 
-TODO: include experiment steps for unlearning object/multiple identities
+<!-- TODO: include experiment steps for unlearning object/multiple identities -->
 
 ### Unlearning experiment on Stable diffusion
 Before start, generate necessary dataset files and gradient files following steps described in _Unlearning procedure_.
