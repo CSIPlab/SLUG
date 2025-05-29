@@ -1,8 +1,18 @@
-# SLUG: Single Layer Unlearning Gradient
+# Targeted Unlearning with Single Layer Unlearning Gradient
+Pytorch implementation of *Targeted Unlearning with Single Layer Unlearning Gradient* in ICML 2025.
+
+[![preprint](https://img.shields.io/badge/arXiv-2407.11867-B31B1B)](https://arxiv.org/abs/2407.11867)
+[![project page](https://img.shields.io/badge/Project_Page-Link-green)](https://efficient-unlearning.github.io/SLUG/)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1sjLWKPIXi961KPV-t1ugIdwaF7bdBjt7?usp=sharing)
+
+
+ 
+[Zikui Cai](https://zikuicai.github.io/)<sup>1,2</sup>, [Yaoteng Tan](https://ytengtan.github.io/)<sup>1</sup>, [M. Salman Asif](https://intra.ece.ucr.edu/~sasif/)<sup>1</sup><br>
+ <sup>1</sup>UC Riverside, <sup>2</sup>University of Maryland
 
 
 ## Abstract
-Unauthorized privacy-related and copyrighted content generation using generative-AI has becoming a significant concern for human society, raising ethical, legal, and privacy issues that demand urgent attention. The EU's General Data Protection Regulation (GDPR) include a ``right to be forgotten,'' which allows individuals to request the deletion of their personal data. However, this primarily applies to data stored in traditional databases, not AI models. Recently, machine unlearning techniques have arise that attempt to eliminate the influence of sensitive content used during AI model training, but they often require extensive updates to the deployed systems and incur substantial computational costs. In this work, we propose a novel and efficient method called Single Layer Unlearning Gradient (SLUG), that can unlearn targeted information by updating targeted layers of a model using a one-time gradient computation. Our method is highly modular and enables the selective removal of multiple sensitive concepts, such as celebrity names and copyrighted content, from the generated outputs of widely used foundation models (e.g., CLIP) and generative models (e.g., Stable Diffusion). Broadly, our method ensures AI-generated content complies with privacy regulations and intellectual property laws, fostering responsible use of generative models, mitigating legal risks and promoting a trustworthy, socially responsible AI ecosystem.
+Machine unlearning methods aim to remove sensitive or unwanted content from trained models, but typically demand extensive model updates at significant computational cost while potentially degrading model performance on both related and unrelated tasks. We propose Single Layer Unlearning Gradient (SLUG) as an efficient method to unlearn targeted information by updating a single critical layer using a one-time gradient computation. SLUG uses layer importance and gradient alignment metrics to identify the optimal layer for targeted information removal while preserving the model utility. We demonstrate the effectiveness of SLUG for CLIP, Stable Diffusion, and vision-language models (VLMs) in removing concrete (e.g., identities and objects) and abstract concepts (e.g., artistic styles). On the UnlearnCanvas benchmark, SLUG achieves comparable unlearning performance to existing methods while requiring significantly less computational resources. Our proposed approach offers a practical solution for targeted unlearning that is computationally efficient and precise.
 
 ## SLUG framework
 
@@ -26,7 +36,7 @@ conda env create -f environment.yml
 
 
 ### Datasets (put under data folder):
-- laion-400M, the training set of CLIP model, from which we sample foget set and retain set. First download the parquet files, and then use img2dataset to download the images, use the following [code](https://github.com/rom1504/img2dataset/blob/main/dataset_examples/laion400m.md). The image-text pairs are stored in tar files such as `00000.tar`, `00001.tar` and so on. 
+- laion-400M, the training set of CLIP model, from which we sample foget set and retain set. First download the parquet files, and then use img2dataset to download the images, use the following [code](https://github.com/rom1504/img2dataset/blob/main/dataset_examples/laion400m.md). The image-text pairs are stored in tar files such as `00000.tar`, `00001.tar` and so on. We provide data samples [here](https://drive.google.com/drive/folders/1K8DCnw3B56hUcxF-8SYWYo-AY1uLAWC1?usp=sharing).
 - ImageNet 2012. We use the imagenet validation set to evaluate CLIP model general performance. Official request access [here](https://www.image-net.org/download.php).  Download and unzip `ILSVRC2012_img_val.tar` under `data/ImageNet/`, and run `bash valprep.sh` to prepare the dataset.
 - CelebA. We sample identities in CelebA dataset to forget. The dataset is available [here](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html), or [GoogleDrive](https://drive.google.com/uc?id=0B7EVK8r0v71pZjFTYXZWM3FlRnM) from CelebA authors. Request the CelebA dataset authors for the name of identities.
 
@@ -143,3 +153,13 @@ Lastly, run UnlearnCanvas evaluation:
 bash scripts/run_uncanvas.sh
 ```
 
+## Citation
+```
+@inproceedings{cai2025targeted,
+  title = {Targeted Unlearning with Single Layer Unlearning Gradient},
+  author = {Cai, Zikui and Tan, Yaoteng and Asif, M. Salman},
+  booktitle = {International Conference on Machine Learning (ICML)},
+  year = {2025},
+  url = {https://arxiv.org/abs/2407.11867}
+}
+```
