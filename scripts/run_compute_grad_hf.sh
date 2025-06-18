@@ -1,9 +1,11 @@
+cd src
+
 exe="python"
-# script="inference_clip_hf"
-script="inference_clip_hf"
+script="get_gradients_hf"
 pairs=(
-  "laion/CLIP-ViT-H-14-laion2B-s32B-b79K" # CLIP used in SDv2.1
+  # "laion/CLIP-ViT-H-14-laion2B-s32B-b79K" # CLIP used in SDv2.1
   # "openai/clip-vit-large-patch14"       # CLIP used in SDv1.5
+  "openai/clip-vit-large-patch14-336"     # CLIP used in "llava-hf/llava-1.5-7b-hf"
 )
 
 for pair in "${pairs[@]}"; do

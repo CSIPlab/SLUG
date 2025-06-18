@@ -1,15 +1,34 @@
-# Targeted Unlearning with Single Layer Unlearning Gradient
-Pytorch implementation of *Targeted Unlearning with Single Layer Unlearning Gradient* in ICML 2025.
+<div align="center">
 
-[![preprint](https://img.shields.io/badge/arXiv-2407.11867-B31B1B)](https://arxiv.org/abs/2407.11867)
-[![project page](https://img.shields.io/badge/Project_Page-Link-green)](https://efficient-unlearning.github.io/SLUG/)
+
+<h1> <img src="doc/slug.png" alt="Alt text" style="height: 1em; vertical-align: middle; margin-right: 0.5em;"> <em>SLUG<em></h1>
+
+<div>
+ Targeted Unlearning with Single Layer Unlearning Gradient (ICML 2025)
+</div>
+</div>
+
+<div>
+<br>
+
+<div align="center">
+
+[![Website](https://img.shields.io/badge/Website-1E90FF?style=for-the-badge&logo=firefox&logoColor=ffffff&labelColor)](https://csiplab.github.io/slug/)
+[![Code](https://img.shields.io/badge/Code-000000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/CSIPlab/SLUG)
+[![arXiv](https://img.shields.io/badge/arXiv-2407.11867-b31b1b.svg?style=for-the-badge)](https://arxiv.org/abs/2407.11867)
+</div>
+</div>
+
+
 <!-- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1sjLWKPIXi961KPV-t1ugIdwaF7bdBjt7?usp=sharing) -->
 
+<img src="doc/front-page.png" alt="SLUG" width="800"/>
 
- 
-[Zikui Cai](https://zikuicai.github.io/)<sup>1,2</sup>, [Yaoteng Tan](https://ytengtan.github.io/)<sup>1</sup>, [M. Salman Asif](https://intra.ece.ucr.edu/~sasif/)<sup>1</sup><br>
- <sup>1</sup>UC Riverside, <sup>2</sup>University of Maryland
 
+<!-- 
+# Targeted Unlearning with Single Layer Unlearning Gradient (ICML 2025)
+[Zikui Cai](https://zikuicai.github.io/) <sup>1,2</sup> [Yaoteng Tan](https://ytengtan.github.io/) <sup>1</sup> [M. Salman Asif](https://intra.ece.ucr.edu/~sasif/) <sup>1</sup><br>
+<sup>1</sup> UC Riverside <sup>2</sup> University of Maryland -->
 
 ## Abstract
 Machine unlearning methods aim to remove sensitive or unwanted content from trained models, but typically demand extensive model updates at significant computational cost while potentially degrading model performance on both related and unrelated tasks. We propose Single Layer Unlearning Gradient (SLUG) as an efficient method to unlearn targeted information by updating a single critical layer using a one-time gradient computation. SLUG uses layer importance and gradient alignment metrics to identify the optimal layer for targeted information removal while preserving the model utility. We demonstrate the effectiveness of SLUG for CLIP, Stable Diffusion, and vision-language models (VLMs) in removing concrete (e.g., identities and objects) and abstract concepts (e.g., artistic styles). On the UnlearnCanvas benchmark, SLUG achieves comparable unlearning performance to existing methods while requiring significantly less computational resources. Our proposed approach offers a practical solution for targeted unlearning that is computationally efficient and precise.
