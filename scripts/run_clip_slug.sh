@@ -11,8 +11,8 @@ celeb_name="Elon_Musk"
 echo "Unlearn method: $method"
 echo "Learning rate: $lr"
 
-pair="ViT-B-32 laion400m_e32"
-# pair="ViT-H-14 laion2B-s32B-b79K"
+# pair="ViT-B-32 laion400m_e32"
+pair="ViT-H-14 laion2B-s32B-b79K"
 
 IFS=' ' read -r -a values <<< "$pair"
 model="${values[0]}"
@@ -26,10 +26,12 @@ forget_data="data/tar_files/${celeb_name}.tar"
 # during unlearning, lr is 1e-4, batch size is 16
 # bs 16 for ViT-B-32 would take 8GB of GPU memory
 
+root= [...]
+
 $exe -m clip.$script \
     --save-frequency 100 \
     --zeroshot-frequency 1 \
-    --train-data="/data/SalmanAsif/yaoteng/Unlearn/SLUG/data/laion400m/00000.tar"  \
+    --train-data="${root}/data/laion400m/00000.tar"  \
     --celeb-name=$celeb_name \
     --forget-data="${root}/data/tar_files/${celeb_name}.tar" \
     --val-data="${root}/data/cc3m/00000.tar" \
