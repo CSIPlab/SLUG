@@ -11,13 +11,14 @@ celeb_name="Elon_Musk"
 echo "Unlearn method: $method"
 echo "Learning rate: $lr"
 
-pair="ViT-B-32 laion400m_e32"
+# pair="ViT-B-32 laion400m_e32"
+pair="ViT-H-14 laion2B-s32B-b79K"
 IFS=' ' read -r -a values <<< "$pair"
 model="${values[0]}"
 pretrained="${values[1]}"
 exe="python"
 
-forget_data="data/laion/forget/names/${celeb_name}.tar"
+forget_data="data/tar_files/${celeb_name}.tar"
 
 # during training, lr is 1e-3
 # lr is 1e-5, batch size is 128
@@ -27,11 +28,11 @@ forget_data="data/laion/forget/names/${celeb_name}.tar"
 $exe -m clip.$script \
     --save-frequency 100 \
     --zeroshot-frequency 1 \
-    --train-data="${root}/data/laion400m/00000.tar"  \
+    --train-data="/data/SalmanAsif/yaoteng/Unlearn/SLUG/data/laion400m/00000.tar"  \
     --celeb-name=$celeb_name \
-    --forget-data="${root}/data/forget/${celeb_name}.tar" \
-    --val-data="${root}/data/cc3m/00000.tar" \
-    --imagenet-val="${root}/data/ImageNet/val" \
+    --forget-data="/data/SalmanAsif/yaoteng/Unlearn/SLUG/data/tar_files/${celeb_name}.tar" \
+    --val-data="/data/SalmanAsif/yaoteng/Unlearn/SLUG/data/cc3m/00000.tar" \
+    --imagenet-val="/data/SalmanAsif/yaoteng/Unlearn/SLUG/data/ImageNet/val" \
     --warmup 0 \
     --batch-size=32 \
     --lr=0 \
