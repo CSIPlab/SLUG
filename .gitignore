@@ -35,6 +35,12 @@ data/ImageNet/val/
 data/laion400m/00000.tar
 data/cc3m/00000.tar
 
+# ckpt
+src/clip/ckpt/
+
+# script
+scripts/
+
 wandb/
 logs/
 results/

@@ -20,7 +20,7 @@ from pathlib import Path
 from collections import defaultdict
 from tqdm import tqdm
 
-data_root = Path("data/celeba")
+data_root = Path("../data/celeba")
 file_image_name = data_root / "list_identity_celeba.txt"
 with open(file_image_name, 'r') as f:
     # Read the file line by line
@@ -80,7 +80,7 @@ def run_name(model, classifier, name, preprocess, device):
 
 # sort the names in the celeba dataset according to the frequency in laion dataset
 # only consider the names longer than 8 characters
-file_path = "data/frequent_celebs.txt"
+file_path = "../data/celeba/frequent_celebs.txt"
 # Initialize an empty list to store the names
 frequent_celebs = []
 # Open the file in read mode and read the names
