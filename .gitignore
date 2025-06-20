@@ -29,6 +29,8 @@ venv.bak/
 # Demo
 serve_images/
 
+# Data
+data/
 
 wandb/
 logs/
