@@ -30,7 +30,10 @@ venv.bak/
 serve_images/
 
 # Data
-data/
+data/celeba/img_align_celeba
+data/ImageNet/val/
+data/laion400m/00000.tar
+data/cc3m/00000.tar
 
 wandb/
 logs/
