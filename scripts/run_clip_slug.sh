@@ -11,8 +11,9 @@ celeb_name="Elon_Musk"
 echo "Unlearn method: $method"
 echo "Learning rate: $lr"
 
-# pair="ViT-B-32 laion400m_e32"
-pair="ViT-H-14 laion2B-s32B-b79K"
+pair="ViT-B-32 laion400m_e32"
+# pair="ViT-H-14 laion2B-s32B-b79K"
+
 IFS=' ' read -r -a values <<< "$pair"
 model="${values[0]}"
 pretrained="${values[1]}"
@@ -30,9 +31,9 @@ $exe -m clip.$script \
     --zeroshot-frequency 1 \
     --train-data="/data/SalmanAsif/yaoteng/Unlearn/SLUG/data/laion400m/00000.tar"  \
     --celeb-name=$celeb_name \
-    --forget-data="/data/SalmanAsif/yaoteng/Unlearn/SLUG/data/tar_files/${celeb_name}.tar" \
-    --val-data="/data/SalmanAsif/yaoteng/Unlearn/SLUG/data/cc3m/00000.tar" \
-    --imagenet-val="/data/SalmanAsif/yaoteng/Unlearn/SLUG/data/ImageNet/val" \
+    --forget-data="${root}/data/tar_files/${celeb_name}.tar" \
+    --val-data="${root}/data/cc3m/00000.tar" \
+    --imagenet-val="${root}/data/ImageNet/val" \
     --warmup 0 \
     --batch-size=32 \
     --lr=0 \
