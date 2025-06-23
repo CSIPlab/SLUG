@@ -174,11 +174,12 @@ bash scripts/run_uncanvas.sh
 
 ## Citation
 ```
-@inproceedings{cai2025targeted,
-  title = {Targeted Unlearning with Single Layer Unlearning Gradient},
-  author = {Cai, Zikui and Tan, Yaoteng and Asif, M. Salman},
-  booktitle = {International Conference on Machine Learning (ICML)},
-  year = {2025},
-  url = {https://arxiv.org/abs/2407.11867}
+@inproceedings{
+  cai2025targeted,
+  title={Targeted Unlearning with Single Layer Unlearning Gradient},
+  author={Zikui Cai and Yaoteng Tan and M. Salman Asif},
+  booktitle={Forty-second International Conference on Machine Learning},
+  year={2025},
+  url={https://openreview.net/forum?id=6Ofb0cGXb5}
 }
 ```
