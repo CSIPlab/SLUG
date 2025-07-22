@@ -15,6 +15,7 @@
 
 [![Website](https://img.shields.io/badge/Website-1E90FF?style=for-the-badge&logo=firefox&logoColor=ffffff&labelColor)](https://csiplab.github.io/slug/)
 [![Code](https://img.shields.io/badge/Code-000000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/CSIPlab/SLUG)
+[![Google Colab](https://img.shields.io/badge/Google%20Colab-%23F9A825.svg?style=for-the-badge&logo=googlecolab&logoColor=white)](https://colab.research.google.com/drive/1sjLWKPIXi961KPV-t1ugIdwaF7bdBjt7?usp=sharing)
 [![arXiv](https://img.shields.io/badge/arXiv-2407.11867-b31b1b.svg?style=for-the-badge)](https://arxiv.org/abs/2407.11867)
 </div>
 </div>
