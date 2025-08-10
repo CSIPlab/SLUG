@@ -322,11 +322,11 @@ def main(args):
     save_root = Path(f"../results/grads/{celeb_name}_{model_repo}_{model_name}")
     
     # Process both splits
-    # for split in ['forget', 'train']:
-    for split in ['train']:
+    for split in ['forget', 'train']:
+    # for split in ['train']:
         # Skip train split for non-Elon celebrities
-        if split == 'train' and celeb_name != 'Elon_Musk':
-            continue
+        # if split == 'train' and celeb_name != 'Elon_Musk':
+        #     continue
             
         # Setup data path
         if split == 'forget':
